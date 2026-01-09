@@ -57,6 +57,13 @@ The generation process follows a cycle:
 kicklang run --role MetaCognito --input "The hero enters the dark cave."
 ```
 
+## 📜 Changelog
+
+- **Mistral AI Integration**: Switched LLM provider to Mistral AI for enhanced narrative generation and structured output.
+- **Prompt Evolution**: Refined planning and orchestration prompts through iterative generations to improve agent coordination.
+- **Web Dashboard**: Added a React-based frontend for monitoring and executing story plans in real-time.
+- **Core System Integration**: Completed implementation of Phases 1-4, establishing the multi-agent narrative architecture and Knowledge Graph sync.
+
 ## 🗺️ Roadmap
 
 See [MetaCognito Roadmap](docs/MetaCognito_Roadmap.md) for the detailed implementation plan.
