@@ -45,3 +45,10 @@ class PlotPoint(BaseModel):
 class SynthesisOutput(BaseModel):
     """Payload for <<synthesis_output>>"""
     narrative_segment: str
+
+class Feedback(BaseModel):
+    """Payload for Critic's evaluation"""
+    score: float # 0.0 to 1.0
+    critique: str
+    suggestion: str
+    approved: bool

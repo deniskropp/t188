@@ -10,6 +10,8 @@ from src.shared.pipes import Pipe
 from src.shared.models import WorldState, CharacterUpdate, PlotPoint
 
 from src.metacognito.resolver import ConflictResolver
+from src.critic.service import CriticService
+from src.shared.config import settings
 
 class MetaCognito:
     def __init__(self):
@@ -19,6 +21,7 @@ class MetaCognito:
         self.charactermanager = CharacterManagerService(self.graph_store)
         self.plotweaver = PlotWeaverService(self.graph_store)
         self.resolver = ConflictResolver()
+        self.critic = CriticService(self.graph_store)
 
     async def process_story_request(self, user_input: str) -> SynthesisOutput:
         request = StoryRequest(user_input=user_input)
@@ -48,19 +51,48 @@ class MetaCognito:
         
         directive = self.resolver.resolve(p_data, w_data, c_data)
         
-        # We can pass the directive to storyteller (assuming we update the storyteller signature or just log it for now)
-        # For prototype, we just pass the original data, but we *could* modify it based on directive.
-        # Let's assume Storyteller *could* allow an extra arg, but we haven't changed it yet.
-        # So we proceed with original data, but having called resolver proves the integration.
+        # 4. Refinement Loop
+        approved = False
+        attempt = 0
+        current_directive = directive
         
-        result = await self.storyteller.generate_narrative(
-            request, 
-            p_data, 
-            w_data, 
-            c_data
-        )
-        # Verify directive makes it into output for visibility (hack for prototype)
-        if "CONFLICT" in directive:
-            result.narrative_segment += f"\n[System Note: {directive}]"
+        result = None
+        
+        while not approved and attempt < settings.max_refinement_steps:
+            attempt += 1
             
+            # Pass (potentially updated) directive/context to storyteller
+            # (Note: Prototype Storyteller doesn't use directive arg yet, but we logically track it)
+            result = await self.storyteller.generate_narrative(
+                request, 
+                p_data, 
+                w_data, 
+                c_data
+            )
+            
+            if "CONFLICT" in current_directive:
+                 result.narrative_segment += f"\n[System Note: {current_directive}]"
+            
+            # Critique
+            feedback = self.critic.critique(result, w_data)
+            
+            if feedback.approved:
+                approved = True
+                # Log success
+                # print(f"Approved on attempt {attempt}")
+            else:
+                # Feedback loop: Update directive/request for next try
+                current_directive += f" CRITIC: {feedback.suggestion}"
+                # In real LLM impl, we'd pass previous output + critique
+                
+                # Mock "improvement": Append something to reach length requirement if that was the fail reason
+                if "Expand" in feedback.suggestion:
+                    # Mocking the LLM listening to feedback
+                    # "We force the next generation to be different"
+                    pass # In this mock, Storyteller is deterministic, so it might fail forever.
+                         # We need Storyteller to be slightly adaptable or Mock logic to handle 'retry'.
+        
+        if not approved:
+            result.narrative_segment += "\n[Warning: Critic usage limit reached. Output may be unrefined.]"
+
         return result
