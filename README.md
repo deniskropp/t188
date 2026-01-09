@@ -32,37 +32,86 @@ Specialized AI agents defined in `KickLang`:
 | **CharacterManager** | **Director**. Tracks traits, dialogue styles, and relationships. |
 | **PlotWeaver** | **Designer**. Sequences events and drives conflict. |
 
-### 3. Placebo Pipes (Communication)
-Communication channels for inter-agent data flow:
--   `<<story_request>>`: Inbound user triggers.
--   `<<world_state>>`: Contextual data about the current scene/location.
--   `<<character_update>>`: Changes in character status or relationships.
--   `<<plot_point>>`: Structural event beats.
--   `<<synthesis_output>>`: Final assembled story segment.
+## ⚙️ Configuration
 
-## 🚀 Workflow
+MetaCognito uses Pydantic-based settings that can be configured via environment variables (prefixed with `METASYS_`).
 
-The generation process follows a cycle:
+### Environment Variables
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `METASYS_LLM_PROVIDER` | `mistral` or `gemini` | `mistral` |
+| `METASYS_MISTRAL_API_KEY` | Your Mistral AI API Key | None |
+| `METASYS_GOOGLE_API_KEY` | Your Google GenAI API Key | None |
+| `METASYS_GRAPH_STORAGE_PATH` | Path to persistent graph JSON | `knowledge_graph.json` |
 
-1.  **Input**: User sends a request via `<<story_request>>`.
-2.  **Coordination**: `MetaCognito` parses the request.
-3.  **Planning**: `PlotWeaver` determines the next event (`<<plot_point>>`).
-4.  **Context**: `WorldBuilder` provides the setting (`<<world_state>>`) and `CharacterManager` aligns actors (`<<character_update>>`).
-5.  **Synthesis**: `Storyteller` weaves these inputs into the final narrative (`<<synthesis_output>>`).
+## 🚀 Getting Started
 
-## 🛠️ Usage (Conceptual)
+1.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
+2.  **Set up Environment**:
+    Create a `.env` file or export your keys:
+    ```bash
+    export METASYS_MISTRAL_API_KEY="your-key-here"
+    ```
+
+## 🛠️ Usage
+
+The system is controlled via a CLI interface.
+
+### Interactive Mode
+Launch a continuous narrative session where your inputs drive the story development.
 ```bash
-# Example KickLang activation
-kicklang run --role MetaCognito --input "The hero enters the dark cave."
+python -m src.cli.main interactive
 ```
+
+### Single Execution
+Run a specific prompt through the orchestration engine.
+```bash
+python -m src.cli.main run "The protagonist discovers a glowing artifact in the cellar."
+```
+
+### Knowledge Graph Inspection
+View the current state of the story world's entities and their relationships.
+```bash
+python -m src.cli.main graph
+```
+
+### Resetting the System
+Clear the Knowledge Graph and delete persistent storage.
+```bash
+python -m src.cli.main clear
+```
+
+## 🎭 Illustrative Example
+
+### 1. Initial Prompt
+**User**: `The hero enters the dark cave.`
+
+### 2. Orchestration Flow
+1.  **MetaCognito** receives the request.
+2.  **PlotWeaver** identifies a "Discovery" beat.
+3.  **WorldBuilder** defines the cave's properties (damp, smelling of ozone).
+4.  **CharacterManager** updates the hero's status (cautious, holding a torch).
+5.  **ConflictResolver** ensures the torch doesn't conflict with the "dark" description.
+6.  **Storyteller** generates the prose.
+
+### 3. Resulting Narrative
+> "The air grew thick with the scent of wet stone and ancient ozone as Elara stepped over the threshold. Her torch flickered, casting long, dancing shadows against the jagged walls. Somewhere in the depths, a rhythmic dripping whispered of secrets long forgotten..."
+
+### 4. Graph Update
+The Knowledge Graph now includes:
+-   `Location: Dark Cave` (newly explored)
+-   `Character: Elara` -> `located_in` -> `Dark Cave`
 
 ## 📜 Changelog
 
 - **Mistral AI Integration**: Switched LLM provider to Mistral AI for enhanced narrative generation and structured output.
-- **Prompt Evolution**: Refined planning and orchestration prompts through iterative generations to improve agent coordination.
-- **Web Dashboard**: Added a React-based frontend for monitoring and executing story plans in real-time.
-- **Core System Integration**: Completed implementation of Phases 1-4, establishing the multi-agent narrative architecture and Knowledge Graph sync.
+- **Persistence Layer**: Added JSON-based file storage for the Knowledge Graph.
+- **Improved CLI**: Enhanced interactive mode and added graph inspection tools.
+- **Conflict Resolution**: Integrated a dedicated resolver to maintain narrative logic between agents.
 
 ## 🗺️ Roadmap
 
