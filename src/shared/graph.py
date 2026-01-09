@@ -76,3 +76,25 @@ class GraphStore:
                 summary.append(f"- {source} --({key})--> {target}")
                 
         return "\n".join(summary)
+
+    def save_to_json(self, path: str):
+        """Saves the graph to a JSON file."""
+        import json
+        data = nx.node_link_data(self.graph)
+        with open(path, 'w') as f:
+            json.dump(data, f, indent=2)
+
+    def load_from_json(self, path: str):
+        """Loads the graph from a JSON file."""
+        import json
+        import os
+        if not os.path.exists(path):
+            return
+        
+        try:
+            with open(path, 'r') as f:
+                data = json.load(f)
+            self.graph = nx.node_link_graph(data)
+        except Exception as e:
+            print(f"Error loading graph from {path}: {e}")
+            self.graph = nx.MultiDiGraph()

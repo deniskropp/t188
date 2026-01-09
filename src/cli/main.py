@@ -57,6 +57,21 @@ def run(
     asyncio.run(execute())
 
 @app.command()
+def clear():
+    """Clear the Knowledge Graph and delete the persistent storage file."""
+    import os
+    from src.shared.config import settings
+    
+    system = MetaCognito()
+    system.graph_store.clear()
+    
+    if os.path.exists(settings.graph_storage_path):
+        os.remove(settings.graph_storage_path)
+        console.print(f"[bold green]Success:[/bold green] Persistent storage '{settings.graph_storage_path}' deleted.")
+    
+    console.print("[bold green]Success:[/bold green] Knowledge Graph cleared.")
+
+@app.command()
 def graph():
     """Inspect the current Knowledge Graph state."""
     system = MetaCognito()

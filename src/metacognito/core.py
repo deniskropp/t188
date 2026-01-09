@@ -24,6 +24,7 @@ class MetaCognito:
         self.resolver = ConflictResolver()
         self.critic = CriticService(self.graph_store)
         self.history = []
+        self.graph_store.load_from_json(settings.graph_storage_path)
 
     async def process_story_request(self, user_input: str, callback: Optional[Callable] = None) -> SynthesisOutput:
         request = StoryRequest(user_input=user_input)
@@ -111,5 +112,8 @@ class MetaCognito:
             "user": user_input,
             "story": result.narrative_segment
         })
+
+        # Persist Graph
+        self.graph_store.save_to_json(settings.graph_storage_path)
 
         return result

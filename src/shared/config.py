@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     
     llm_provider: LLMProvider = LLMProvider.MISTRAL
     
+    graph_storage_path: str = "knowledge_graph.json"
+    
     # Prompt Templates (Basic examples)
     storyteller_prompt: str = "You are a master storyteller..."
 

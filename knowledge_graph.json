@@ -1,0 +1,26 @@
+{
+  "directed": true,
+  "multigraph": true,
+  "graph": {},
+  "nodes": [
+    {
+      "type": "Event",
+      "description": "A lone wanderer enters the neon-lit tavern.",
+      "source": "llm_generated",
+      "id": "evt:7173967605735161994"
+    },
+    {
+      "type": "Character",
+      "name": "Lone Wanderer",
+      "source": "llm_generated",
+      "id": "char:lone wanderer"
+    },
+    {
+      "type": "Location",
+      "name": "neon-lit tavern",
+      "source": "llm_generated",
+      "id": "loc:neon-lit_tavern"
+    }
+  ],
+  "edges": []
+}
