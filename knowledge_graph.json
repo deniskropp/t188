@@ -4,22 +4,76 @@
   "graph": {},
   "nodes": [
     {
-      "type": "Event",
-      "description": "A lone wanderer enters the neon-lit tavern.",
+      "type": "Character",
+      "name": "Elara",
       "source": "llm_generated",
-      "id": "evt:7173967605735161994"
+      "id": "char:elara"
     },
     {
-      "type": "Character",
-      "name": "Lone Wanderer",
+      "type": "Event",
+      "description": "Elara discovers a ticking pocket watch in the Ruins of Solitude.",
       "source": "llm_generated",
-      "id": "char:lone wanderer"
+      "id": "evt:4991904184767726986"
     },
     {
       "type": "Location",
-      "name": "neon-lit tavern",
+      "name": "Ruins of Solitude",
       "source": "llm_generated",
-      "id": "loc:neon-lit_tavern"
+      "id": "loc:ruins_of_solitude"
+    },
+    {
+      "type": "Character",
+      "name": "char:elara",
+      "source": "llm_generated",
+      "id": "char:char:elara"
+    },
+    {
+      "type": "Event",
+      "description": "Elara picks up the pocket watch",
+      "source": "llm_generated",
+      "id": "evt:5701446331499951480"
+    },
+    {
+      "type": "Event",
+      "description": "The ticking of the pocket watch stops",
+      "source": "llm_generated",
+      "id": "evt:4451156412787608116"
+    },
+    {
+      "type": "Event",
+      "description": "The Ruins of Solitude begin to rebuild themselves in reverse",
+      "source": "llm_generated",
+      "id": "evt:-7169748509107969712"
+    },
+    {
+      "type": "Location",
+      "name": "Chronomantic Nexus",
+      "source": "llm_generated",
+      "id": "loc:chronomantic_nexus"
+    },
+    {
+      "type": "Event",
+      "description": "Elara encounters a guardian of time in the Chronomantic Nexus",
+      "source": "llm_generated",
+      "id": "evt:4473032680342132441"
+    },
+    {
+      "type": "Event",
+      "description": "Elara engages in combat with the guardian",
+      "source": "llm_generated",
+      "id": "evt:4269951451530142724"
+    },
+    {
+      "type": "Event",
+      "description": "The guardian reveals the true purpose of the pocket watch",
+      "source": "llm_generated",
+      "id": "evt:-3649945893711680112"
+    },
+    {
+      "type": "Event",
+      "description": "Elara defeats the guardian and gains control over time",
+      "source": "llm_generated",
+      "id": "evt:7913909262613816643"
     }
   ],
   "edges": []
