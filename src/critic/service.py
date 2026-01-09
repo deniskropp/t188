@@ -6,28 +6,25 @@ class CriticService:
         # Critic also looks at graph consistency!
         self.graph_store = graph_store
 
-    def critique(self, narrative: SynthesisOutput, world: WorldState) -> Feedback:
+    async def critique(self, narrative: SynthesisOutput, world: WorldState) -> Feedback:
         """
         Evaluates the narrative for quality and consistency.
         """
-        score = 0.8 # Mock score
-        approved = True
-        critique = "Good flow."
-        suggestion = ""
+        from src.shared.llm import GoogleGenAIService
+        llm = GoogleGenAIService()
         
-        # Simple heuristic: If narrative is too short, reject it.
-        if len(narrative.narrative_segment.split()) < 5:
-            score = 0.2
-            approved = False
-            critique = "Too short."
-            suggestion = "Expand on the description."
+        prompt = f"""
+        Act as a literary critic and consistency checker.
+        Evaluate the following narrative segment against the established world state.
         
-        # Check graph consistency (mock)
-        # e.g., if narrative mentions a location not in world state?
+        World Context: {world}
         
-        return Feedback(
-            score=score,
-            critique=critique,
-            suggestion=suggestion,
-            approved=approved
-        )
+        Narrative Segment:
+        "{narrative.narrative_segment}"
+        
+        Provide a structured evaluation including a score (0.0-1.0), a critique textual summary,
+        a specific suggestion for improvement, and a boolean approval (true if score > {settings.critic_threshold}).
+        """
+        
+        feedback = await llm.generate_structured(prompt, Feedback)
+        return feedback

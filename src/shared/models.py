@@ -1,17 +1,37 @@
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Any, Union
+from pydantic import BaseModel, Field, field_validator
 
 # Base Graph Elements
+# Base Graph Elements
+
+class KeyValue(BaseModel):
+    key: str
+    value: str
+
 class GraphNode(BaseModel):
     id: str
     type: str
-    properties: Dict[str, Any] = Field(default_factory=dict)
+    properties: List[KeyValue] = Field(default_factory=list)
+
+    @field_validator('properties', mode='before')
+    @classmethod
+    def validate_properties(cls, v: Any) -> Any:
+        if isinstance(v, dict):
+            return [KeyValue(key=k, value=str(val)) for k, val in v.items()]
+        return v
 
 class GraphEdge(BaseModel):
     source: str
     target: str
     relationship: str
-    properties: Dict[str, Any] = Field(default_factory=dict)
+    properties: List[KeyValue] = Field(default_factory=list)
+
+    @field_validator('properties', mode='before')
+    @classmethod
+    def validate_properties(cls, v: Any) -> Any:
+        if isinstance(v, dict):
+            return [KeyValue(key=k, value=str(val)) for k, val in v.items()]
+        return v
 
 # KickLang Command Payloads
 

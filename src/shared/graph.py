@@ -1,6 +1,6 @@
 import networkx as nx
 from typing import List, Dict, Any, Optional
-from src.shared.models import GraphNode, GraphEdge
+from src.shared.models import GraphNode, GraphEdge, KeyValue
 
 class GraphStore:
     def __init__(self):
@@ -8,11 +8,13 @@ class GraphStore:
 
     def add_node(self, node: GraphNode):
         """Adds a node to the graph."""
-        self.graph.add_node(node.id, type=node.type, **node.properties)
+        props = {kv.key: kv.value for kv in node.properties}
+        self.graph.add_node(node.id, type=node.type, **props)
 
     def add_edge(self, edge: GraphEdge):
         """Adds an edge to the graph."""
-        self.graph.add_edge(edge.source, edge.target, key=edge.relationship, **edge.properties)
+        props = {kv.key: kv.value for kv in edge.properties}
+        self.graph.add_edge(edge.source, edge.target, key=edge.relationship, **props)
 
     def get_node(self, node_id: str) -> Optional[GraphNode]:
         """Retrieves a node by ID."""
@@ -22,7 +24,8 @@ class GraphStore:
         # Separate type from other properties
         properties = data.copy()
         node_type = properties.pop('type', 'Unknown')
-        return GraphNode(id=node_id, type=node_type, properties=properties)
+        kv_list = [KeyValue(key=k, value=str(v)) for k, v in properties.items()]
+        return GraphNode(id=node_id, type=node_type, properties=kv_list)
 
     def get_edges(self, source_id: str) -> List[GraphEdge]:
         """Retrieves all outgoing edges from a source node."""
@@ -31,11 +34,12 @@ class GraphStore:
         
         edges = []
         for _, target, key, data in self.graph.out_edges(source_id, keys=True, data=True):
+            kv_list = [KeyValue(key=k, value=str(v)) for k, v in data.items()]
             edges.append(GraphEdge(
                 source=source_id,
                 target=target,
                 relationship=key,
-                properties=data
+                properties=kv_list
             ))
         return edges
 
@@ -50,3 +54,25 @@ class GraphStore:
     def clear(self):
         """Clears the graph (useful for testing)."""
         self.graph.clear()
+
+    def get_summary(self) -> str:
+        """Returns a string summary of all nodes and edges in the graph."""
+        if not self.graph.nodes:
+            return "The world is currently empty."
+            
+        summary = ["Current World State:"]
+        
+        # Summarize Nodes
+        summary.append("Nodes:")
+        for node_id, data in self.graph.nodes(data=True):
+            node_type = data.get('type', 'Unknown')
+            name = data.get('name') or data.get('description') or node_id
+            summary.append(f"- [{node_type}] {name} (ID: {node_id})")
+            
+        # Summarize Edges
+        if self.graph.edges:
+            summary.append("\nRelationships:")
+            for source, target, key, data in self.graph.edges(keys=True, data=True):
+                summary.append(f"- {source} --({key})--> {target}")
+                
+        return "\n".join(summary)

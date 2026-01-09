@@ -22,6 +22,7 @@ class MetaCognito:
         self.plotweaver = PlotWeaverService(self.graph_store)
         self.resolver = ConflictResolver()
         self.critic = CriticService(self.graph_store)
+        self.history = []
 
     async def process_story_request(self, user_input: str) -> SynthesisOutput:
         request = StoryRequest(user_input=user_input)
@@ -31,12 +32,17 @@ class MetaCognito:
         char_pipe = Pipe[CharacterUpdate]("character_update")
         plot_pipe = Pipe[PlotPoint]("plot_point")
 
+        # Prepare Context
+        graph_summary = self.graph_store.get_summary()
+        history_summary = "\n".join([f"Q: {h['user']} A: {h['story'][:100]}..." for h in self.history])
+        context = f"GRAPH SUMMARY:\n{graph_summary}\nHISTORY:\n{history_summary}"
+
         # 1. Parallel processing of world, characters, and plot
         import asyncio
         world_state, character_update, plot_point = await asyncio.gather(
-            self.worldbuilder.update_world(request),
-            self.charactermanager.update_characters(request),
-            self.plotweaver.weave_plot(request)
+            self.worldbuilder.update_world(request, context=context),
+            self.charactermanager.update_characters(request, context=context),
+            self.plotweaver.weave_plot(request, context=context)
         )
         
         # 2. Push to pipes
@@ -67,14 +73,15 @@ class MetaCognito:
                 request, 
                 p_data, 
                 w_data, 
-                c_data
+                c_data,
+                history=self.history
             )
             
             if "CONFLICT" in current_directive:
                  result.narrative_segment += f"\n[System Note: {current_directive}]"
             
             # Critique
-            feedback = self.critic.critique(result, w_data)
+            feedback = await self.critic.critique(result, w_data)
             
             if feedback.approved:
                 approved = True
@@ -94,5 +101,11 @@ class MetaCognito:
         
         if not approved:
             result.narrative_segment += "\n[Warning: Critic usage limit reached. Output may be unrefined.]"
+
+        # Update Session History
+        self.history.append({
+            "user": user_input,
+            "story": result.narrative_segment
+        })
 
         return result

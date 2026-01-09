@@ -7,20 +7,32 @@ class WorldBuilderService:
     def __init__(self, graph_store: GraphStore):
         self.graph_store = graph_store
 
-    async def update_world(self, request: StoryRequest) -> WorldState:
-        # Simple extraction logic
-        location_suffix = request.user_input.split()[-1] if request.user_input else "Unknown"
-        location_name = f"Forest of {location_suffix}"
+    async def update_world(self, request: StoryRequest, context: str = "") -> WorldState:
+        from src.shared.llm import GoogleGenAIService
+        llm = GoogleGenAIService()
         
-        # Check if exists
-        node_id = f"loc:{location_name.replace(' ', '_').lower()}"
-        existing = self.graph_store.get_node(node_id)
+        prompt = f"""
+        Analyze the following story request and generate a rich WorldState.
+        Identify key locations and abstract concepts that set the scene.
         
-        if not existing:
-            new_node = GraphNode(id=node_id, type="Location", properties={"name": location_name, "description": "A mysterious place."})
-            self.graph_store.add_node(new_node)
-            
-        return WorldState(
-            locations=[location_name, "Dragon's Lair"],
-            concepts=["Magic", "Bravery"]
-        )
+        Existing Context:
+        {context}
+        
+        New Request: "{request.user_input}"
+        
+        Maintain consistency with existing locations and concepts if they are relevant.
+        """
+        
+        world_state = await llm.generate_structured(prompt, WorldState)
+        
+        # Sync with Graph
+        for location in world_state.locations:
+            node_id = f"loc:{location.replace(' ', '_').lower()}"
+            if not self.graph_store.get_node(node_id):
+                self.graph_store.add_node(GraphNode(
+                    id=node_id, 
+                    type="Location", 
+                    properties={"name": location, "source": "llm_generated"}
+                ))
+                
+        return world_state
