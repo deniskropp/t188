@@ -10,8 +10,8 @@ class CriticService:
         """
         Evaluates the narrative for quality and consistency.
         """
-        from src.shared.llm import GoogleGenAIService
-        llm = GoogleGenAIService()
+        from src.shared.llm import get_llm_service
+        llm = get_llm_service()
         
         prompt = f"""
         Act as a literary critic and consistency checker.

@@ -1,4 +1,10 @@
+from enum import Enum
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class LLMProvider(str, Enum):
+    GEMINI = "gemini"
+    MISTRAL = "mistral"
+
 
 class Settings(BaseSettings):
     app_name: str = "MetaCognito"
@@ -6,7 +12,12 @@ class Settings(BaseSettings):
     critic_threshold: float = 0.7
     
     google_api_key: str | None = None
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-2.0-flash-exp"
+    
+    mistral_api_key: str | None = None
+    mistral_model: str = "devstral-medium-latest"
+    
+    llm_provider: LLMProvider = LLMProvider.MISTRAL
     
     # Prompt Templates (Basic examples)
     storyteller_prompt: str = "You are a master storyteller..."

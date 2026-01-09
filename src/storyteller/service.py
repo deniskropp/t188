@@ -14,10 +14,10 @@ class StorytellerService:
         history: list[dict[str, str]] = None
     ) -> SynthesisOutput:
         # Use LLM to generate narrative
-        from src.shared.llm import GoogleGenAIService
+        from src.shared.llm import get_llm_service
         from src.shared.config import settings
         
-        llm = GoogleGenAIService()
+        llm = get_llm_service()
         
         history_text = ""
         if history:

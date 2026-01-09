@@ -8,8 +8,8 @@ class CharacterManagerService:
         self.graph_store = graph_store
 
     async def update_characters(self, request: StoryRequest, context: str = "") -> CharacterUpdate:
-        from src.shared.llm import GoogleGenAIService
-        llm = GoogleGenAIService()
+        from src.shared.llm import get_llm_service
+        llm = get_llm_service()
         
         prompt = f"""
         Analyze the following story request and generate a CharacterUpdate.

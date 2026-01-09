@@ -1,25 +1,30 @@
 import os
-from google import genai
-from typing import Type, TypeVar, Optional
+from typing import Type, TypeVar, Protocol, runtime_checkable
 from pydantic import BaseModel
-from src.shared.config import settings
+from google import genai
+from mistralai import Mistral
+from src.shared.config import settings, LLMProvider
 
 T = TypeVar("T", bound=BaseModel)
 
-class GoogleGenAIService:
+@runtime_checkable
+class LLMService(Protocol):
+    async def generate_text(self, prompt: str) -> str:
+        ...
+
+    async def generate_structured(self, prompt: str, schema: Type[T]) -> T:
+        ...
+
+class GeminiService:
     def __init__(self):
-        if not settings.google_api_key:
-            settings.google_api_key = os.getenv("GOOGLE_API_KEY") 
-        if not settings.google_api_key:
-            raise ValueError("GOOGLE_API_KEY is not set in configuration")
+        api_key = settings.google_api_key or os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY is not set")
         
-        self.client = genai.Client(api_key=settings.google_api_key)
+        self.client = genai.Client(api_key=api_key)
         self.model_name = settings.gemini_model
 
     async def generate_text(self, prompt: str) -> str:
-        """
-        Generates free-form text based on the prompt.
-        """
         response = await self.client.aio.models.generate_content(
             model=self.model_name,
             contents=prompt
@@ -27,10 +32,6 @@ class GoogleGenAIService:
         return response.text
 
     async def generate_structured(self, prompt: str, schema: Type[T]) -> T:
-        """
-        Generates a structured object based on the prompt and Pydantic schema.
-        Uses native structured output support.
-        """
         response = await self.client.aio.models.generate_content(
             model=self.model_name,
             contents=prompt,
@@ -39,11 +40,38 @@ class GoogleGenAIService:
                 'response_schema': schema
             }
         )
-        # response.parsed is available when response_schema is provided with Pydantic model
-        # However, verifying if automatic parsing works as expected or if we need response.text parsing.
-        # The new SDK documentation says response.parsed contains the parsed object if schema is provided.
         if response.parsed:
              return response.parsed
-        
-        # Fallback if parsed is None for some reason, though it shouldn't be with proper schema
         return schema.model_validate_json(response.text)
+
+class MistralService:
+    def __init__(self):
+        api_key = settings.mistral_api_key or os.getenv("MISTRAL_API_KEY")
+        if not api_key:
+            raise ValueError("MISTRAL_API_KEY is not set")
+        
+        self.client = Mistral(api_key=api_key)
+        self.model_name = settings.mistral_model
+
+    async def generate_text(self, prompt: str) -> str:
+        response = await self.client.chat.complete_async(
+            model=self.model_name,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+
+    async def generate_structured(self, prompt: str, schema: Type[T]) -> T:
+        response = await self.client.chat.parse_async(
+            model=self.model_name,
+            messages=[{"role": "user", "content": prompt}],
+            response_format=schema
+        )
+        return response.choices[0].message.parsed
+
+def get_llm_service() -> LLMService:
+    if settings.llm_provider == LLMProvider.GEMINI:
+        return GeminiService()
+    elif settings.llm_provider == LLMProvider.MISTRAL:
+        return MistralService()
+    else:
+        raise ValueError(f"Unsupported LLM provider: {settings.llm_provider}")
