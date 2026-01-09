@@ -79,6 +79,28 @@ View the current state of the story world's entities and their relationships.
 python -m src.cli.main graph
 ```
 
+**Example Output:**
+```text
+(base) [einrichten@q3 ~/t188]$ python -m src.cli.main graph
+                                                                         Knowledge Graph Entities
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ ID                       ┃ Type      ┃ Properties                                                                                                                      ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ char:elara               │ Character │ {'type': 'Character', 'name': 'Elara', 'source': 'llm_generated'}                                                               │
+│ evt:4991904184767726986  │ Event     │ {'type': 'Event', 'description': 'Elara discovers a ticking pocket watch in the Ruins of Solitude.', 'source': 'llm_generated'} │
+│ loc:ruins_of_solitude    │ Location  │ {'type': 'Location', 'name': 'Ruins of Solitude', 'source': 'llm_generated'}                                                    │
+│ char:char:elara          │ Character │ {'type': 'Character', 'name': 'char:elara', 'source': 'llm_generated'}                                                          │
+│ evt:5701446331499951480  │ Event     │ {'type': 'Event', 'description': 'Elara picks up the pocket watch', 'source': 'llm_generated'}                                  │
+│ evt:4451156412787608116  │ Event     │ {'type': 'Event', 'description': 'The ticking of the pocket watch stops', 'source': 'llm_generated'}                            │
+│ evt:-7169748509107969712 │ Event     │ {'type': 'Event', 'description': 'The Ruins of Solitude begin to rebuild themselves in reverse', 'source': 'llm_generated'}     │
+│ loc:chronomantic_nexus   │ Location  │ {'type': 'Location', 'name': 'Chronomantic Nexus', 'source': 'llm_generated'}                                                   │
+│ evt:4473032680342132441  │ Event     │ {'type': 'Event', 'description': 'Elara encounters a guardian of time in the Chronomantic Nexus', 'source': 'llm_generated'}    │
+│ evt:4269951451530142724  │ Event     │ {'type': 'Event', 'description': 'Elara engages in combat with the guardian', 'source': 'llm_generated'}                        │
+│ evt:-3649945893711680112 │ Event     │ {'type': 'Event', 'description': 'The guardian reveals the true purpose of the pocket watch', 'source': 'llm_generated'}        │
+│ evt:7913909262613816643  │ Event     │ {'type': 'Event', 'description': 'Elara defeats the guardian and gains control over time', 'source': 'llm_generated'}           │
+└──────────────────────────┴───────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
 ### Resetting the System
 Clear the Knowledge Graph and delete persistent storage.
 ```bash
