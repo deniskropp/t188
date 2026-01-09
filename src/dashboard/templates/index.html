@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MetaCognito Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; height: 100vh; margin: 0; }
+        #chat-pane { width: 30%; border-right: 1px solid #ccc; padding: 20px; display: flex; flex-direction: column; }
+        #graph-pane { width: 70%; background: #f0f0f0; }
+        #cy { width: 100%; height: 100%; }
+        #messages { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; border: 1px solid #eee; padding: 10px; }
+        .msg { margin-bottom: 10px; }
+        .user { color: blue; font-weight: bold; }
+        .system { color: green; }
+        input { padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="chat-pane">
+        <h2>MetaCognito</h2>
+        <div id="messages"></div>
+        <input type="text" id="input" placeholder="Enter story action..." onkeydown="if(event.key==='Enter') send()">
+    </div>
+    <div id="graph-pane">
+        <div id="cy"></div>
+    </div>
+
+    <script>
+        var cy = cytoscape({
+            container: document.getElementById('cy'),
+            style: [
+                { selector: 'node', style: { 'label': 'data(label)', 'background-color': 'data(color)' } },
+                { selector: 'edge', style: { 'label': 'data(label)', 'width': 2, 'line-color': '#ccc', 'target-arrow-shape': 'triangle' } }
+            ]
+        });
+
+        function updateGraph() {
+            fetch('/api/graph')
+                .then(res => res.json())
+                .then(data => {
+                    cy.elements().remove();
+                    cy.add(data.elements);
+                    cy.layout({ name: 'cose', animate: true }).run();
+                });
+        }
+
+        function send() {
+            const input = document.getElementById('input');
+            const msg = input.value;
+            if (!msg) return;
+            
+            const msgs = document.getElementById('messages');
+            msgs.innerHTML += `<div class="msg user">User: ${msg}</div>`;
+            input.value = '';
+
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            })
+            .then(res => res.json())
+            .then(data => {
+                msgs.innerHTML += `<div class="msg system">System: ${data.reply}</div>`;
+                msgs.scrollTop = msgs.scrollHeight;
+                updateGraph();
+            });
+        }
+        
+        // Initial load
+        updateGraph();
+    </script>
+</body>
+</html>

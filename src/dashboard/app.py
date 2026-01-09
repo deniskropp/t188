@@ -29,20 +29,28 @@ async def get_graph():
     
     # Transform for cytoscape.js
     elements = []
+    # networkx node_link_data might return 'nodes' and 'links' (default)
+    # but verify what data contains
+    
     for node in data["nodes"]:
         elements.append({
             "data": {
-                "id": node["id"], 
-                "label": node.get("properties", {}).get("name", node["id"]),
+                "id": str(node["id"]), # Ensure string
+                "label": node.get("properties", {}).get("name", str(node["id"])),
                 "color": "#ff0000" if "Event" in node.get("type", "") else "#00ff00" if "Character" in node.get("type", "") else "#0000ff"
             }
         })
     
-    for link in data["links"]:
+    # In newer networkx, it might use 'links' or 'edges' depending on attrs=
+    # Default is 'links'
+    
+    links_key = "links" if "links" in data else "edges"
+    
+    for link in data.get(links_key, []):
         elements.append({
             "data": {
-                "source": link["source"], 
-                "target": link["target"], 
+                "source": str(link["source"]), 
+                "target": str(link["target"]), 
                 "label": link.get("key", "")
             }
         })
