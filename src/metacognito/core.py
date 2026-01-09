@@ -1,3 +1,4 @@
+from typing import Optional, Callable
 from src.shared.models import StoryRequest, SynthesisOutput
 from src.storyteller.service import StorytellerService
 from src.worldbuilder.service import WorldBuilderService
@@ -24,7 +25,7 @@ class MetaCognito:
         self.critic = CriticService(self.graph_store)
         self.history = []
 
-    async def process_story_request(self, user_input: str) -> SynthesisOutput:
+    async def process_story_request(self, user_input: str, callback: Optional[Callable] = None) -> SynthesisOutput:
         request = StoryRequest(user_input=user_input)
         
         # Initialize pipes
@@ -37,6 +38,9 @@ class MetaCognito:
         history_summary = "\n".join([f"Q: {h['user']} A: {h['story'][:100]}..." for h in self.history])
         context = f"GRAPH SUMMARY:\n{graph_summary}\nHISTORY:\n{history_summary}"
 
+        if callback:
+            await callback("Planning", "PlotWeaver, WorldBuilder, CharacterManager are initializing...")
+
         # 1. Parallel processing of world, characters, and plot
         import asyncio
         world_state, character_update, plot_point = await asyncio.gather(
@@ -45,6 +49,9 @@ class MetaCognito:
             self.plotweaver.weave_plot(request, context=context)
         )
         
+        if callback:
+             await callback("Coordination", "Agents have synchronized their updates.")
+
         # 2. Push to pipes
         world_pipe.push(world_state)
         char_pipe.push(character_update)
@@ -57,6 +64,9 @@ class MetaCognito:
         
         directive = self.resolver.resolve(p_data, w_data, c_data)
         
+        if callback:
+             await callback("Synthesis", "Storyteller is weaving the narrative...")
+
         # 4. Refinement Loop
         approved = False
         attempt = 0
@@ -85,22 +95,16 @@ class MetaCognito:
             
             if feedback.approved:
                 approved = True
-                # Log success
-                # print(f"Approved on attempt {attempt}")
             else:
-                # Feedback loop: Update directive/request for next try
+                if callback:
+                    await callback("Refinement", f"Critic suggested refinement: {feedback.suggestion}")
                 current_directive += f" CRITIC: {feedback.suggestion}"
-                # In real LLM impl, we'd pass previous output + critique
-                
-                # Mock "improvement": Append something to reach length requirement if that was the fail reason
-                if "Expand" in feedback.suggestion:
-                    # Mocking the LLM listening to feedback
-                    # "We force the next generation to be different"
-                    pass # In this mock, Storyteller is deterministic, so it might fail forever.
-                         # We need Storyteller to be slightly adaptable or Mock logic to handle 'retry'.
         
         if not approved:
             result.narrative_segment += "\n[Warning: Critic usage limit reached. Output may be unrefined.]"
+
+        if callback:
+             await callback("Finalizing", "Updating Knowledge Graph and history...")
 
         # Update Session History
         self.history.append({
