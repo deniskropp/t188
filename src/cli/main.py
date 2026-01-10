@@ -85,5 +85,25 @@ def graph():
 
     console.print(table)
 
+@app.command()
+def transform(
+    input_text: str = typer.Argument(..., help="The narrative transformation to apply")
+):
+    """Apply a narrative transformation for Knowledge Graph updates only."""
+    system = MetaCognito()
+    
+    async def execute():
+        with console.status("[bold blue]Transforming Knowledge Graph...[/bold blue]") as status:
+            async def update_status(phase: str, message: str):
+                status.update(f"[bold blue]{phase}[/bold blue]: {message}")
+                await asyncio.sleep(0.5)
+                
+            await system.transform_state(input_text, callback=update_status)
+        
+        console.print(Panel(f"Transformation applied: [italic]{input_text}[/italic]", title="[bold green]Success[/bold green]", border_style="green"))
+        console.print(f"[dim]Total Graph Nodes: {len(system.graph_store.graph.nodes)}[/dim]")
+
+    asyncio.run(execute())
+
 if __name__ == "__main__":
     app()

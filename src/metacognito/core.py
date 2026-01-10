@@ -117,3 +117,36 @@ class MetaCognito:
         self.graph_store.save_to_json(settings.graph_storage_path)
 
         return result
+
+    async def transform_state(self, user_input: str, callback: Optional[Callable] = None):
+        """
+        Processes a transformation request to update the Knowledge Graph without generating a narrative.
+        """
+        request = StoryRequest(user_input=user_input)
+        
+        # Prepare Context
+        graph_summary = self.graph_store.get_summary()
+        history_summary = "\n".join([f"Q: {h['user']} A: {h['story'][:100]}..." for h in self.history])
+        context = f"GRAPH SUMMARY:\n{graph_summary}\nHISTORY:\n{history_summary}"
+
+        if callback:
+            await callback("Transforming", "Agents are analyzing the state change...")
+
+        # 1. Parallel processing of world, characters, and plot
+        import asyncio
+        world_state, character_update, plot_point = await asyncio.gather(
+            self.worldbuilder.update_world(request, context=context),
+            self.charactermanager.update_characters(request, context=context),
+            self.plotweaver.weave_plot(request, context=context)
+        )
+        
+        if callback:
+             await callback("Updating", "Knowledge Graph is being updated...")
+
+        # Note: Agents already sync with graph in their update_ methods.
+        # We just need to ensure the graph is persisted.
+
+        # Persist Graph
+        self.graph_store.save_to_json(settings.graph_storage_path)
+        
+        return world_state, character_update, plot_point

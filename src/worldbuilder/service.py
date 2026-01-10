@@ -21,11 +21,13 @@ class WorldBuilderService:
         New Request: "{request.user_input}"
         
         Maintain consistency with existing locations and concepts if they are relevant.
+        If a location already exists, provide updated properties in 'location_details'.
         """
         
         world_state = await llm.generate_structured(prompt, WorldState)
         
         # Sync with Graph
+        # First add basic locations
         for location in world_state.locations:
             node_id = f"loc:{location.replace(' ', '_').lower()}"
             if not self.graph_store.get_node(node_id):
@@ -34,5 +36,9 @@ class WorldBuilderService:
                     type="Location", 
                     properties={"name": location, "source": "llm_generated"}
                 ))
+        
+        # Then update with details
+        for node in world_state.location_details + world_state.concept_details:
+             self.graph_store.add_node(node)
                 
         return world_state
