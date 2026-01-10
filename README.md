@@ -99,26 +99,26 @@ python -m src.cli.main clear
 
 For more details, see the [Reference Manual](docs/Reference_Manual.md). 📖
 
-## 🎭 Illustrative Example
+## 🎭 Illustrative Example 🌟
 
-### 1. Initial Prompt
-**User**: `The hero enters the dark cave.`
+### 1️⃣ Initial Prompt
+**User**: `The hero enters the dark cave.` 🦸‍♂️🌑
 
-### 2. Orchestration Flow
-1.  **MetaCognito** receives the request.
-2.  **PlotWeaver** identifies a "Discovery" beat.
-3.  **WorldBuilder** defines the cave's properties (damp, smelling of ozone).
-4.  **CharacterManager** updates the hero's status (cautious, holding a torch).
-5.  **ConflictResolver** ensures the torch doesn't conflict with the "dark" description.
-6.  **Storyteller** generates the prose.
+### 2️⃣ Orchestration Flow ⚙️
+1.  **MetaCognito** 👔 receives the request.
+2.  **PlotWeaver** 🎞️ identifies a "Discovery" beat.
+3.  **WorldBuilder** 🌍 defines the cave's properties (damp, smelling of ozone).
+4.  **CharacterManager** 👥 updates the hero's status (cautious, holding a torch).
+5.  **ConflictResolver** ⚖️ ensures the torch doesn't conflict with the "dark" description.
+6.  **Storyteller** ✍️ generates the prose.
 
-### 3. Resulting Narrative
-> "The air grew thick with the scent of wet stone and ancient ozone as Elara stepped over the threshold. Her torch flickered, casting long, dancing shadows against the jagged walls. Somewhere in the depths, a rhythmic dripping whispered of secrets long forgotten..."
+### 3️⃣ Resulting Narrative 📜
+> "The air grew thick with the scent of wet stone and ancient ozone as Elara stepped over the threshold. Her torch flickered, casting long, dancing shadows against the jagged walls. Somewhere in the depths, a rhythmic dripping whispered of secrets long forgotten..." ✨
 
-### 4. Graph Update
+### 4️⃣ Graph Update 🕸️
 The Knowledge Graph now includes:
--   `Location: Dark Cave` (newly explored)
--   `Character: Elara` -> `located_in` -> `Dark Cave`
+-   `Location: Dark Cave` 🏔️ (newly explored)
+-   `Character: Elara` -> `located_in` -> `Dark Cave` 📍
 
 ## 📜 Changelog
 
