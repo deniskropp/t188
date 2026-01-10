@@ -28,7 +28,33 @@ class MetaCognito:
         self.critic = CriticService(self.graph_store)
         self.planner = MetaCognitoPlanner(self.graph_store)
         self.history = []
+        self._load_state()
+
+    def _load_state(self):
         self.graph_store.load_from_json(settings.graph_storage_path)
+        import json
+        import os
+        h_path = settings.graph_storage_path.replace(".json", "_history.json")
+        if os.path.exists(h_path):
+            with open(h_path, "r") as f:
+                self.history = json.load(f)
+
+    def _save_state(self):
+        self.graph_store.save_to_json(settings.graph_storage_path)
+        import json
+        h_path = settings.graph_storage_path.replace(".json", "_history.json")
+        with open(h_path, "w") as f:
+            json.dump(self.history, f, indent=2)
+
+    def reset(self):
+        self.graph_store.clear()
+        self.history = []
+        import os
+        h_path = settings.graph_storage_path.replace(".json", "_history.json")
+        if os.path.exists(h_path):
+            os.remove(h_path)
+        if os.path.exists(settings.graph_storage_path):
+            os.remove(settings.graph_storage_path)
 
     async def _get_context(self) -> str:
         graph_summary = self.graph_store.get_summary()
@@ -131,8 +157,8 @@ class MetaCognito:
             "story": result.narrative_segment
         })
 
-        # Persist Graph
-        self.graph_store.save_to_json(settings.graph_storage_path)
+        # Persist everything
+        self._save_state()
 
         return result
 
@@ -164,8 +190,7 @@ class MetaCognito:
         # Note: Agents already sync with graph in their update_ methods.
         # We just need to ensure the graph is persisted.
 
-        # Persist Graph
-        self.graph_store.save_to_json(settings.graph_storage_path)
+        self._save_state()
         
         return world_state, character_update, plot_point
 
@@ -181,7 +206,6 @@ class MetaCognito:
 
         result = await self.planner.plan_pipeline(request, context=context, callback=callback)
         
-        # Persist Graph
-        self.graph_store.save_to_json(settings.graph_storage_path)
+        self._save_state()
         
         return result

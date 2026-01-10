@@ -58,7 +58,7 @@ def interactive():
         def __init__(self, system, suggestions_ref):
             self.system = system
             self.suggestions_ref = suggestions_ref
-            self.commands = ["/help", "/exit", "/quit", "/clear", "/graph", "/transform", "/suggest", "/plan", "/state"]
+            self.commands = ["/help", "/exit", "/quit", "/clear", "/reset", "/graph", "/transform", "/suggest", "/plan", "/state", "/history"]
 
         def get_completions(self, document, complete_event):
             text = document.text_before_cursor
@@ -104,7 +104,15 @@ def interactive():
                 break
 
             if user_input == "/help":
-                console.print("[bold cyan]Commands:[/bold cyan] /clear, /graph, /transform, /suggest, /plan, /state, /exit")
+                console.print("[bold cyan]Commands:[/bold cyan]")
+                console.print("  /suggest   : Generate contextual story starters.")
+                console.print("  /plan <q>  : Stage a subconscious plan for the next step.")
+                console.print("  /state     : Show the current staged plan.")
+                console.print("  /transform : Force a world state update without narrative.")
+                console.print("  /graph     : View Knowledge Graph entities.")
+                console.print("  /history   : Show the session history.")
+                console.print("  /clear     : Wipe EVERYTHING (Graph + History).")
+                console.print("  /exit      : End the session.")
                 continue
 
             if user_input == "/state":
@@ -114,10 +122,24 @@ def interactive():
                     console.print("[dim]No subconscious plan currently staged. Use /plan to pre-generate one.[/dim]")
                 continue
 
-            if user_input == "/clear":
-                system.graph_store.clear()
+            if user_input == "/history":
+                if not system.history:
+                    console.print("[dim]No narrative history yet.[/dim]")
+                else:
+                    table = Table(title="Session History")
+                    table.add_column("Turn", justify="right")
+                    table.add_column("User Input", style="cyan")
+                    table.add_column("Narrative Snippet", style="italic")
+                    for i, h in enumerate(system.history, 1):
+                        snippet = h["story"][:100] + "..." if len(h["story"]) > 100 else h["story"]
+                        table.add_row(str(i), h["user"], snippet)
+                    console.print(table)
+                continue
+
+            if user_input in ["/clear", "/reset"]:
+                system.reset()
                 staged_plan = None
-                console.print("[bold green]Success:[/bold green] Knowledge Graph and staged plan cleared.")
+                console.print("[bold green]Success:[/bold green] System state reset.")
                 continue
 
             if user_input == "/graph":
@@ -160,6 +182,17 @@ def interactive():
                     console.print("[bold cyan]Subconscious Plan Staged.[/bold cyan] Next request will utilize this intuition.")
                 continue
 
+            if user_input.startswith("/transform "):
+                transform_input = user_input[11:].strip()
+                if transform_input:
+                    with console.status("[bold yellow]Transforming World State...[/bold yellow]") as status:
+                        async def update_status(phase: str, message: str):
+                            status.update(f"[bold yellow]{phase}[/bold yellow]: {message}")
+                            await asyncio.sleep(0.5)
+                        await system.transform_state(transform_input, callback=update_status)
+                    console.print("[bold green]World State Updated.[/bold green] The Knowledge Graph has been evolved.")
+                continue
+
             # Handle numeric suggestion selection
             if user_input.isdigit():
                 idx = int(user_input) - 1
@@ -192,17 +225,9 @@ def run(
 @app.command()
 def clear():
     """Clear the Knowledge Graph and delete the persistent storage file."""
-    import os
-    from src.shared.config import settings
-    
     system = MetaCognito()
-    system.graph_store.clear()
-    
-    if os.path.exists(settings.graph_storage_path):
-        os.remove(settings.graph_storage_path)
-        console.print(f"[bold green]Success:[/bold green] Persistent storage '{settings.graph_storage_path}' deleted.")
-    
-    console.print("[bold green]Success:[/bold green] Knowledge Graph cleared.")
+    system.reset()
+    console.print("[bold green]Success:[/bold green] Knowledge Graph and history cleared.")
 
 @app.command()
 def graph():
