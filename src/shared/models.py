@@ -41,26 +41,26 @@ class StoryRequest(BaseModel):
 
 class WorldState(BaseModel):
     """Payload for <<world_state>>"""
-    locations: List[str]
-    concepts: List[str]
-    # Optionally include full node details if needed
-    location_details: List[GraphNode] = Field(default_factory=list)
-    concept_details: List[GraphNode] = Field(default_factory=list)
+    locations: List[str] = Field(default_factory=list, description="Names of locations discovered")
+    concepts: List[str] = Field(default_factory=list, description="Abstract concepts or lore elements")
+    items: List[str] = Field(default_factory=list, description="Physical objects or items of interest")
+    
+    nodes: List[GraphNode] = Field(default_factory=list, description="Full node details for locations, concepts, items")
+    edges: List[GraphEdge] = Field(default_factory=list, description="Relationships like 'located_in' or 'possesses'")
 
 class CharacterUpdate(BaseModel):
     """Payload for <<character_update>>"""
-    characters: List[str]
-    traits: List[str]
-    interactions: List[str] # Format: "CharA interacts_with CharB"
+    characters: List[str] = Field(default_factory=list, description="Names of characters involved")
     
-    character_details: List[GraphNode] = Field(default_factory=list)
+    nodes: List[GraphNode] = Field(default_factory=list, description="Full node details for characters")
+    edges: List[GraphEdge] = Field(default_factory=list, description="Relationships like 'has_trait', 'interacts_with', 'possesses'")
 
 class PlotPoint(BaseModel):
     """Payload for <<plot_point>>"""
-    events: List[str]
-    precedence: List[str] # Format: "EventA precedes EventB"
+    events: List[str] = Field(default_factory=list, description="Short descriptions of events")
     
-    event_details: List[GraphNode] = Field(default_factory=list)
+    nodes: List[GraphNode] = Field(default_factory=list, description="Full node details for events")
+    edges: List[GraphEdge] = Field(default_factory=list, description="Relationships like 'precedes'")
 
 class SynthesisOutput(BaseModel):
     """Payload for <<synthesis_output>>"""

@@ -20,27 +20,27 @@ class PlotWeaverService:
         
         New Request: "{request.user_input}"
         
-        Ensure global plot consistency and progression from previous events.
-        If an event already exists or is a continuation, provide updated properties in 'event_details'.
+        - events: Short descriptions of events.
+        - nodes: Full details for events. Type must be "Event".
+        - edges: Relationships like 'precedes' between events.
         """
         
         plot_point = await llm.generate_structured(prompt, PlotPoint)
         
         # Sync with Graph
-        # First add basic events with stable IDs
+        # Add or update nodes
+        for node in plot_point.nodes:
+             self.graph_store.add_node(node)
+             
+        # Add basic events if details missing
         for event in plot_point.events:
-             # Create a stable ID based on description
              stable_id = event.replace(" ", "_").lower()[:50]
              event_id = f"evt:{stable_id}"
              if not self.graph_store.get_node(event_id):
-                self.graph_store.add_node(GraphNode(
-                    id=event_id,
-                    type="Event",
-                    properties={"description": event, "source": "llm_generated"}
-                ))
+                self.graph_store.add_node(GraphNode(id=event_id, type="Event", properties={"description": event}))
         
-        # Then update with details
-        for node in plot_point.event_details:
-             self.graph_store.add_node(node)
+        # Sync edges
+        for edge in plot_point.edges:
+             self.graph_store.add_edge(edge)
 
         return plot_point

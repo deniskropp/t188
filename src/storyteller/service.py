@@ -25,10 +25,23 @@ class StorytellerService:
 
         graph_summary = self.graph_store.get_summary()
         
-        context_prompt = f"""
+        # Prepare a descriptive prompt for the LLM
+        # We use the names from the update objects
+        world_desc = ", ".join(world.locations + world.concepts + world.items)
+        char_desc = ", ".join(chars.characters)
+        plot_desc = "\n".join([f"- {e}" for e in plot.events])
+        
+        prompt = f"""
         {settings.storyteller_prompt}
         
-        Write the next segment of the story based on these inputs.
+        Continue the story based on the following updates:
+        
+        WORLD: {world_desc}
+        CHARACTERS: {char_desc}
+        PLOT EVENTS:
+        {plot_desc}
+        
+        USER REQUEST: "{request.user_input}"
         
         CURRENT WORLD GRAPH:
         {graph_summary}
@@ -36,22 +49,8 @@ class StorytellerService:
         NARRATIVE HISTORY:
         {history_text}
         
-        NEW INPUTS FOR THIS TURN:
-        Request: {request.user_input}
-        
-        World State Updates:
-        - Locations: {', '.join(world.locations)}
-        - Concepts: {', '.join(world.concepts)}
-        
-        Character Updates:
-        - Present: {', '.join(chars.characters)}
-        - Interactions: {', '.join(chars.interactions)}
-        
-        Plot Event Updates:
-        - Events: {', '.join(plot.events)}
-        - Plan: {', '.join(plot.precedence)}
+        Write a coherent and engaging narrative segment that incorporates these elements.
         """
         
-        narrative_text = await llm.generate_text(context_prompt)
-        
-        return SynthesisOutput(narrative_segment=narrative_text)
+        content = await llm.generate_text(prompt)
+        return SynthesisOutput(narrative_segment=content)

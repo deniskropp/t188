@@ -13,32 +13,33 @@ class CharacterManagerService:
         
         prompt = f"""
         Analyze the following story request and generate a CharacterUpdate.
-        Identify the main characters, their traits, and initial interaction dynamics.
+        Identify the characters involved, their traits, and relationships.
         
         Existing Context:
         {context}
         
         New Request: "{request.user_input}"
         
-        Maintain consistency with existing characters and their traits.
-        If a character already exists, provide updated properties in 'character_details'.
+        - characters: names of characters
+        - nodes: Full details for characters. Type must be "Character".
+        - edges: Relationships like 'has_trait', 'interacts_with', or 'possesses' (for Items).
         """
         
         char_update = await llm.generate_structured(prompt, CharacterUpdate)
         
         # Sync with Graph
-        # First add basic characters
+        # Add or update nodes
+        for node in char_update.nodes:
+             self.graph_store.add_node(node)
+        
+        # Add basic characters if details missing
         for char_name in char_update.characters:
             node_id = f"char:{char_name.lower()}"
             if not self.graph_store.get_node(node_id):
-                self.graph_store.add_node(GraphNode(
-                    id=node_id, 
-                    type="Character", 
-                    properties={"name": char_name, "source": "llm_generated"}
-                ))
-        
-        # Then update with details
-        for node in char_update.character_details:
-             self.graph_store.add_node(node)
+                self.graph_store.add_node(GraphNode(id=node_id, type="Character", properties={"name": char_name}))
+
+        # Sync edges
+        for edge in char_update.edges:
+            self.graph_store.add_edge(edge)
         
         return char_update

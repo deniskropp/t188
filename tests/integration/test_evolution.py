@@ -15,16 +15,16 @@ import src.shared.llm # Ensure module is loaded
 async def test_refinement_loop():
     from unittest.mock import AsyncMock, patch
     # Mock the LLM service to return valid data so the loop can proceed
-    with patch("src.shared.llm.GoogleGenAIService") as MockServiceClass:
+    with patch("src.shared.llm.MistralService") as MockServiceClass:
         mock_llm = AsyncMock()
         MockServiceClass.return_value = mock_llm
         
         # Setup returns
         from src.shared.models import WorldState, CharacterUpdate, PlotPoint, Feedback
         mock_llm.generate_structured.side_effect = [
-            WorldState(locations=["L"], concepts=["C"]), 
-            CharacterUpdate(characters=["C"], traits=[], interactions=[]),
-            PlotPoint(events=["E"], precedence=[]),
+            WorldState(locations=["L"], concepts=["C"], nodes=[], edges=[]), 
+            CharacterUpdate(characters=["C"], nodes=[], edges=[]),
+            PlotPoint(events=["E"], nodes=[], edges=[]),
             Feedback(score=1.0, critique="Good", suggestion="", approved=True)
         ]
         mock_llm.generate_text.return_value = "Long enough story content for the test"
@@ -41,7 +41,7 @@ async def test_refinement_loop():
 async def test_refinement_loop_rejection():
     from unittest.mock import AsyncMock, patch
     # Patch here as well to avoid init error
-    with patch("src.shared.llm.GoogleGenAIService") as MockServiceClass:
+    with patch("src.shared.llm.MistralService") as MockServiceClass:
         mock_llm = AsyncMock()
         MockServiceClass.return_value = mock_llm
         
@@ -49,8 +49,8 @@ async def test_refinement_loop_rejection():
         from src.shared.models import WorldState, CharacterUpdate, PlotPoint
         mock_llm.generate_structured.side_effect = [
             WorldState(locations=["L"], concepts=["C"]), 
-            CharacterUpdate(characters=["C"], traits=[], interactions=[]),
-            PlotPoint(events=["E"], precedence=[])
+            CharacterUpdate(characters=["C"], nodes=[], edges=[]),
+            PlotPoint(events=["E"], nodes=[], edges=[])
         ]
         # Storyteller
         mock_llm.generate_text.return_value = "Story"
