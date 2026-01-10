@@ -16,10 +16,20 @@ To generate continuous, evolving narratives where:
 
 ## 🏗️ Architecture
 
-### 1. The Knowledge Graph
+MetaCognito follows a **Subconscious → Conscious** orchestration flow:
+
+1.  **Subconscious Phase (The Planner)**:
+    - Analyzes the "hidden" intent of the user.
+    - Generates **Cues**, **Latent Patterns**, and a **Dream Narrative**.
+    - Produces an **Implicit Plan** that instructs the narrative agents.
+2.  **Conscious Phase (Narrative Agents)**:
+    - **WorldBuilder**, **CharacterManager**, and **PlotWeaver** update the state in parallel based on the implicit plan.
+    - **Storyteller** synthesizes the updates into the final narrative segment.
+
+### The Knowledge Graph
 The central "brain" of the story. Entities are nodes, and relationships are edges.
--   **Nodes**: `Character`, `Location`, `Event`, `Item`, `Concept`
--   **Edges**: `has_trait`, `located_in`, `precedes`, `interacts_with`, `possesses`
+-   **Nodes**: `Character`, `Location`, `Event`, `Item`, `Concept`, `SubconsciousSession`
+-   **Edges**: `has_trait`, `located_in`, `precedes`, `interacts_with`, `possesses`, `identifies_cue`
 
 ### 2. The Roles (Agents)
 Specialized AI agents defined in `KickLang`:
@@ -57,55 +67,37 @@ MetaCognito uses Pydantic-based settings that can be configured via environment 
     export METASYS_MISTRAL_API_KEY="your-key-here"
     ```
 
-## 🛠️ Usage
+## 🚀 Usage
 
-The system is controlled via a CLI interface.
-
-### Interactive Mode
-Launch a continuous narrative session where your inputs drive the story development.
+### 🎮 Interactive Mode (Recommended)
+Launch a continuous narrative session with full command support.
 ```bash
 python -m src.cli.main interactive
 ```
+**Interactive Commands:**
+- `/suggest`: Get contextual story starters.
+- `/plan <input>`: Pre-calculate subconscious reasoning for a beat.
+- `/state`: View your currently staged plan.
+- `/graph`: Inspect the world state.
 
-### Single Execution
-Run a specific prompt through the orchestration engine.
+### 🧠 Standalone Planning
+Inspect the "thoughts" of the system without generating text.
 ```bash
-python -m src.cli.main run "The protagonist discovers a glowing artifact in the cellar."
+python -m src.cli.main plan "The protagonist finds a glowing artifact."
 ```
 
-### Knowledge Graph Inspection
-View the current state of the story world's entities and their relationships.
+### 📈 Graph Inspection
 ```bash
 python -m src.cli.main graph
 ```
 
-**Example Output:**
-```text
-(base) [einrichten@q3 ~/t188]$ python -m src.cli.main graph
-                                                                         Knowledge Graph Entities
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ ID                       ┃ Type      ┃ Properties                                                                                                                      ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ char:elara               │ Character │ {'type': 'Character', 'name': 'Elara', 'source': 'llm_generated'}                                                               │
-│ evt:4991904184767726986  │ Event     │ {'type': 'Event', 'description': 'Elara discovers a ticking pocket watch in the Ruins of Solitude.', 'source': 'llm_generated'} │
-│ loc:ruins_of_solitude    │ Location  │ {'type': 'Location', 'name': 'Ruins of Solitude', 'source': 'llm_generated'}                                                    │
-│ char:char:elara          │ Character │ {'type': 'Character', 'name': 'char:elara', 'source': 'llm_generated'}                                                          │
-│ evt:5701446331499951480  │ Event     │ {'type': 'Event', 'description': 'Elara picks up the pocket watch', 'source': 'llm_generated'}                                  │
-│ evt:4451156412787608116  │ Event     │ {'type': 'Event', 'description': 'The ticking of the pocket watch stops', 'source': 'llm_generated'}                            │
-│ evt:-7169748509107969712 │ Event     │ {'type': 'Event', 'description': 'The Ruins of Solitude begin to rebuild themselves in reverse', 'source': 'llm_generated'}     │
-│ loc:chronomantic_nexus   │ Location  │ {'type': 'Location', 'name': 'Chronomantic Nexus', 'source': 'llm_generated'}                                                   │
-│ evt:4473032680342132441  │ Event     │ {'type': 'Event', 'description': 'Elara encounters a guardian of time in the Chronomantic Nexus', 'source': 'llm_generated'}    │
-│ evt:4269951451530142724  │ Event     │ {'type': 'Event', 'description': 'Elara engages in combat with the guardian', 'source': 'llm_generated'}                        │
-│ evt:-3649945893711680112 │ Event     │ {'type': 'Event', 'description': 'The guardian reveals the true purpose of the pocket watch', 'source': 'llm_generated'}        │
-│ evt:7913909262613816643  │ Event     │ {'type': 'Event', 'description': 'Elara defeats the guardian and gains control over time', 'source': 'llm_generated'}           │
-└──────────────────────────┴───────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Resetting the System
+### 🧹 Resetting the System
 Clear the Knowledge Graph and delete persistent storage.
 ```bash
 python -m src.cli.main clear
 ```
+
+For more details, see the [Reference Manual](docs/Reference_Manual.md).
 
 ## 🎭 Illustrative Example
 
@@ -130,9 +122,11 @@ The Knowledge Graph now includes:
 
 ## 📜 Changelog
 
+- **Subconscious Planning v1.1**: Integrated Researcher, Analyst, and Storyteller roles into a pre-narrative pipeline.
+- **Persistence 2.0**: All planning items now persist in the Knowledge Graph with automated context summarization to prevent bloat.
+- **Dynamic Suggestions**: Added `/suggest` to generate lore-consistent story starters.
+- **Improved CLI**: Added command auto-completion and rich status updates.
 - **Mistral AI Integration**: Switched LLM provider to Mistral AI for enhanced narrative generation and structured output.
-- **Persistence Layer**: Added JSON-based file storage for the Knowledge Graph.
-- **Improved CLI**: Enhanced interactive mode and added graph inspection tools.
 - **Conflict Resolution**: Integrated a dedicated resolver to maintain narrative logic between agents.
 
 ## 🗺️ Roadmap

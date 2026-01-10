@@ -8,18 +8,32 @@ from rich.live import Live
 from typing import Optional
 
 from src.metacognito.core import MetaCognito
-from src.shared.models import SynthesisOutput
+from src.shared.models import SynthesisOutput, MindState
 
 app = typer.Typer(help="MetaCognito Storybook Orchestration Engine")
 console = Console()
 
-async def _process_request(system: MetaCognito, user_input: str):
+def _display_mind_state(state: MindState):
+    """Formats and displays the subconscious mind state."""
+    console.print(Panel(state.dream.narrative if state.dream else "No dream narrative", title="[bold magenta]Dream Narrative[/bold magenta]", border_style="magenta"))
+    
+    table = Table(title="Subconscious Planning Details", show_header=True, header_style="bold cyan")
+    table.add_column("Category", style="dim")
+    table.add_column("Details")
+    
+    table.add_row("Cues", "\n".join([f"• {c.cue} [dim]({c.context})[/dim]" for c in state.cues]) if state.cues else "None")
+    table.add_row("Patterns", "\n".join([f"• {p.pattern} [dim](strength: {p.strength})[/dim]" for p in state.patterns]) if state.patterns else "None")
+    table.add_row("Plan Steps", "\n".join([f"{i+1}. {s}" for i, s in enumerate(state.plan.steps)]) if state.plan and state.plan.steps else "None")
+    
+    console.print(table)
+
+async def _process_request(system: MetaCognito, user_input: str, mind_state: Optional[MindState] = None):
     with console.status("[bold blue]Orchestrating Narrative Agents...[/bold blue]") as status:
         async def update_status(phase: str, message: str):
             status.update(f"[bold blue]{phase}[/bold blue]: {message}")
             await asyncio.sleep(0.5) # Slight delay for visual effect
             
-        result = await system.process_story_request(user_input, callback=update_status)
+        result = await system.process_story_request(user_input, callback=update_status, mind_state=mind_state)
     
     console.print(Panel(result.narrative_segment, title="[bold cyan]Storyteller[/bold cyan]", border_style="cyan"))
     console.print(f"[dim]Graph Nodes: {len(system.graph_store.graph.nodes)}[/dim]")
@@ -44,7 +58,7 @@ def interactive():
         def __init__(self, system, suggestions_ref):
             self.system = system
             self.suggestions_ref = suggestions_ref
-            self.commands = ["/help", "/exit", "/quit", "/clear", "/graph", "/transform", "/suggest"]
+            self.commands = ["/help", "/exit", "/quit", "/clear", "/graph", "/transform", "/suggest", "/plan", "/state"]
 
         def get_completions(self, document, complete_event):
             text = document.text_before_cursor
@@ -66,11 +80,16 @@ def interactive():
     completer = MetaCompleter(system, suggestions_ref)
 
     async def loop():
+        staged_plan = None
         while True:
             try:
                 # Use prompt_toolkit for the actual input
+                prompt_text = "You > "
+                if staged_plan:
+                    prompt_text = "You [Planned] > "
+                    
                 user_input = await session.prompt_async(
-                    "You > ",
+                    prompt_text,
                     completer=completer,
                     complete_while_typing=True
                 )
@@ -85,22 +104,32 @@ def interactive():
                 break
 
             if user_input == "/help":
-                console.print("[bold cyan]Commands:[/bold cyan] /clear, /graph, /transform, /exit")
+                console.print("[bold cyan]Commands:[/bold cyan] /clear, /graph, /transform, /suggest, /plan, /state, /exit")
+                continue
+
+            if user_input == "/state":
+                if staged_plan:
+                    _display_mind_state(staged_plan)
+                else:
+                    console.print("[dim]No subconscious plan currently staged. Use /plan to pre-generate one.[/dim]")
                 continue
 
             if user_input == "/clear":
                 system.graph_store.clear()
-                console.print("[bold green]Success:[/bold green] Knowledge Graph cleared.")
+                staged_plan = None
+                console.print("[bold green]Success:[/bold green] Knowledge Graph and staged plan cleared.")
                 continue
 
             if user_input == "/graph":
-                # Reuse the logic from graph command (simplified here)
+                # ... same logic ...
                 table = Table(title="Knowledge Graph Entities")
                 table.add_column("ID", style="cyan")
                 table.add_column("Type", style="magenta")
                 table.add_column("Description", style="green")
                 for node_id, data in system.graph_store.graph.nodes(data=True):
                     desc = data.get("description") or data.get("desc") or "N/A"
+                    if len(str(desc)) > 100:
+                        desc = str(desc)[:100] + "..."
                     table.add_row(str(node_id), data.get("type", "Unknown"), desc)
                 console.print(table)
                 continue
@@ -119,6 +148,18 @@ def interactive():
                 console.print(Panel(table, title="[bold yellow]Inspiration (Tab for more)[/bold yellow]", border_style="yellow"))
                 continue
 
+            if user_input.startswith("/plan "):
+                plan_input = user_input[6:].strip()
+                if plan_input:
+                    with console.status("[bold magenta]Accessing Subconscious...[/bold magenta]") as status:
+                        async def update_status(phase: str, message: str):
+                            status.update(f"[bold magenta]{phase}[/bold magenta]: {message}")
+                            await asyncio.sleep(0.5)
+                        staged_plan = await system.plan(plan_input, callback=update_status)
+                    _display_mind_state(staged_plan)
+                    console.print("[bold cyan]Subconscious Plan Staged.[/bold cyan] Next request will utilize this intuition.")
+                continue
+
             # Handle numeric suggestion selection
             if user_input.isdigit():
                 idx = int(user_input) - 1
@@ -126,7 +167,8 @@ def interactive():
                     user_input = suggestions_ref["list"][idx]
                     console.print(f"[bold cyan]Using suggestion:[/bold cyan] {user_input}")
 
-            await _process_request(system, user_input)
+            await _process_request(system, user_input, mind_state=staged_plan)
+            staged_plan = None # Clear after use
             
     asyncio.run(loop())
 
@@ -195,6 +237,24 @@ def transform(
         
         console.print(Panel(f"Transformation applied: [italic]{input_text}[/italic]", title="[bold green]Success[/bold green]", border_style="green"))
         console.print(f"[dim]Total Graph Nodes: {len(system.graph_store.graph.nodes)}[/dim]")
+
+    asyncio.run(execute())
+
+@app.command()
+def plan(
+    input_text: str = typer.Argument(..., help="The story request to plan for")
+):
+    """Run only the subconscious planning phase to see internal reasoning."""
+    system = MetaCognito()
+    
+    async def execute():
+        with console.status("[bold magenta]Accessing Subconscious...[/bold magenta]") as status:
+            async def update_status(phase: str, message: str):
+                status.update(f"[bold magenta]{phase}[/bold magenta]: {message}")
+                await asyncio.sleep(0.5)
+            state = await system.plan(input_text, callback=update_status)
+        
+        _display_mind_state(state)
 
     asyncio.run(execute())
 

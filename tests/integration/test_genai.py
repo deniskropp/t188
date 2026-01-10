@@ -17,7 +17,10 @@ async def test_metacognito_with_mock_genai():
     # But wait, we import it inside the methods in the services. 
     # e.g. "from src.shared.llm import GoogleGenAIService" inside update_world
     
+    from src.shared.config import settings, LLMProvider
     with patch("src.shared.llm.genai") as mock_genai_mod:
+        settings.llm_provider = LLMProvider.GEMINI
+        settings.google_api_key = "dummy_key"
         # Mock configuration to avoid API Key error
         mock_genai_mod.configure = AsyncMock()
         
@@ -25,13 +28,21 @@ async def test_metacognito_with_mock_genai():
         # Or we can let it instantiate but mock the internal model.
         
         # Let's patch the class to return a mock instance
-        with patch("src.shared.llm.GoogleGenAIService") as MockServiceClass:
+        with patch("src.shared.llm.GeminiService") as MockServiceClass:
             # Setup the mock instance
             mock_llm = AsyncMock()
             MockServiceClass.return_value = mock_llm
             
             # Setup return values for the mock methods
+            from src.shared.models import SubconsciousCue, LatentPattern, DreamNarrative, ImplicitPlan
+            from src.planner.service import CueList, PatternList
             mock_llm.generate_structured.side_effect = [
+                # Subconscious
+                CueList(cues=[SubconsciousCue(cue="MockCue", context="MockCtx")]),
+                PatternList(patterns=[LatentPattern(pattern="MockPat", strength=0.9)]),
+                DreamNarrative(narrative="Internal Dream"),
+                ImplicitPlan(steps=["Step 1"]),
+                # Main
                 WorldState(locations=["MockLoc"], concepts=["MockConcept"]), # WorldBuilder
                 CharacterUpdate(characters=["MockChar"], traits=[], interactions=[]), # CharManager
                 PlotPoint(events=["MockEvent"], precedence=[]), # PlotWeaver
@@ -48,5 +59,5 @@ async def test_metacognito_with_mock_genai():
             result = await system.process_story_request("Test Input")
             
             assert "Generated Story Content" in result.narrative_segment
-            assert mock_llm.generate_structured.call_count >= 4
+            assert mock_llm.generate_structured.call_count >= 8
             assert mock_llm.generate_text.call_count >= 1

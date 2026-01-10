@@ -8,11 +8,14 @@ from src.plotweaver.service import PlotWeaverService
 from src.shared.graph import GraphStore
 
 from src.shared.pipes import Pipe
-from src.shared.models import WorldState, CharacterUpdate, PlotPoint
+from src.shared.models import WorldState, CharacterUpdate, PlotPoint, MindState
 
 from src.metacognito.resolver import ConflictResolver
 from src.critic.service import CriticService
 from src.shared.config import settings
+
+from src.planner.orchestrator import MetaCognitoPlanner
+from src.planner.memory import StorytellerPlannerMemory
 
 class MetaCognito:
     def __init__(self):
@@ -23,10 +26,16 @@ class MetaCognito:
         self.plotweaver = PlotWeaverService(self.graph_store)
         self.resolver = ConflictResolver()
         self.critic = CriticService(self.graph_store)
+        self.planner = MetaCognitoPlanner(self.graph_store)
         self.history = []
         self.graph_store.load_from_json(settings.graph_storage_path)
 
-    async def process_story_request(self, user_input: str, callback: Optional[Callable] = None) -> SynthesisOutput:
+    async def _get_context(self) -> str:
+        graph_summary = self.graph_store.get_summary()
+        history_summary = "\n".join([f"Q: {h['user']} A: {str(h["story"])[:100]}..." for h in self.history])
+        return f"GRAPH SUMMARY:\n{graph_summary}\nHISTORY:\n{history_summary}"
+
+    async def process_story_request(self, user_input: str, callback: Optional[Callable] = None, mind_state: Optional[MindState] = None) -> SynthesisOutput:
         request = StoryRequest(user_input=user_input)
         
         # Initialize pipes
@@ -35,12 +44,21 @@ class MetaCognito:
         plot_pipe = Pipe[PlotPoint]("plot_point")
 
         # Prepare Context
-        graph_summary = self.graph_store.get_summary()
-        history_summary = "\n".join([f"Q: {h['user']} A: {str(h["story"])[:100]}..." for h in self.history])
-        context = f"GRAPH SUMMARY:\n{graph_summary}\nHISTORY:\n{history_summary}"
+        context = await self._get_context()
 
+        if not mind_state:
+            if callback:
+                await callback("KickLang Operation: Planning", "Invoking Subconscious Planner...")
+            # 0. Subconscious Planning
+            mind_state = await self.planner.plan_pipeline(request, context=context, callback=callback)
+        else:
+            if callback:
+                await callback("KickLang Operation: Context", "Using existing subconscious plan.")
+        subconscious_synthesis = StorytellerPlannerMemory.compile_synthesis(mind_state)
+        
         if callback:
-            await callback("KickLang Operation: Planning", "Invoking WorldBuilder, CharacterManager, and PlotWeaver...")
+             await callback("Subconscious Output", subconscious_synthesis)
+             await callback("KickLang Operation: Planning", "Invoking WorldBuilder, CharacterManager, and PlotWeaver...")
 
         # 1. Parallel processing of world, characters, and plot
         import asyncio
@@ -150,3 +168,20 @@ class MetaCognito:
         self.graph_store.save_to_json(settings.graph_storage_path)
         
         return world_state, character_update, plot_point
+
+    async def plan(self, user_input: str, callback: Optional[Callable] = None) -> MindState:
+        """
+        Runs only the subconscious planning phase.
+        """
+        request = StoryRequest(user_input=user_input)
+        context = await self._get_context()
+
+        if callback:
+            await callback("KickLang Operation: Planning", "Invoking Subconscious Planner...")
+
+        result = await self.planner.plan_pipeline(request, context=context, callback=callback)
+        
+        # Persist Graph
+        self.graph_store.save_to_json(settings.graph_storage_path)
+        
+        return result

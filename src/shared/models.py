@@ -76,3 +76,32 @@ class Feedback(BaseModel):
 class SuggestionList(BaseModel):
     """Payload for dynamic story suggestions"""
     suggestions: List[str] = Field(..., description="A list of creative story starting prompts")
+
+# Subconscious / MindRoles Models
+
+class SubconsciousCue(BaseModel):
+    """Data gathered by the Researcher role"""
+    cue: str
+    context: str
+
+class LatentPattern(BaseModel):
+    """Patterns discovered by the Analyst role"""
+    pattern: str
+    strength: float
+
+class DreamNarrative(BaseModel):
+    """Internal summary by the Storyteller role"""
+    narrative: str
+
+class ImplicitPlan(BaseModel):
+    """Sequenced path by the Planner role"""
+    steps: List[str]
+
+class MindState(BaseModel):
+    """Composite subconscious state"""
+    cues: List[SubconsciousCue] = Field(default_factory=list)
+    patterns: List[LatentPattern] = Field(default_factory=list)
+    dream: Optional[DreamNarrative] = None
+    plan: Optional[ImplicitPlan] = None
+    nodes: List[GraphNode] = Field(default_factory=list)
+    edges: List[GraphEdge] = Field(default_factory=list)

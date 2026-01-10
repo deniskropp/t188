@@ -20,8 +20,15 @@ async def test_refinement_loop():
         MockServiceClass.return_value = mock_llm
         
         # Setup returns
-        from src.shared.models import WorldState, CharacterUpdate, PlotPoint, Feedback
+        from src.shared.models import WorldState, CharacterUpdate, PlotPoint, Feedback, SubconsciousCue, LatentPattern, DreamNarrative, ImplicitPlan
+        from src.planner.service import CueList, PatternList
         mock_llm.generate_structured.side_effect = [
+            # Subconscious
+            CueList(cues=[SubconsciousCue(cue="Cue", context="Ctx")]),
+            PatternList(patterns=[LatentPattern(pattern="Pat", strength=1.0)]),
+            DreamNarrative(narrative="Dream"),
+            ImplicitPlan(steps=["Step"]),
+            # Main
             WorldState(locations=["L"], concepts=["C"], nodes=[], edges=[]), 
             CharacterUpdate(characters=["C"], nodes=[], edges=[]),
             PlotPoint(events=["E"], nodes=[], edges=[]),
@@ -46,8 +53,15 @@ async def test_refinement_loop_rejection():
         MockServiceClass.return_value = mock_llm
         
         # We only need the structured calls for world/char/plot to succeed first
-        from src.shared.models import WorldState, CharacterUpdate, PlotPoint
+        from src.shared.models import WorldState, CharacterUpdate, PlotPoint, SubconsciousCue, LatentPattern, DreamNarrative, ImplicitPlan
+        from src.planner.service import CueList, PatternList
         mock_llm.generate_structured.side_effect = [
+            # Subconscious
+            CueList(cues=[SubconsciousCue(cue="Cue", context="Ctx")]),
+            PatternList(patterns=[LatentPattern(pattern="Pat", strength=1.0)]),
+            DreamNarrative(narrative="Dream"),
+            ImplicitPlan(steps=["Step"]),
+            # Main
             WorldState(locations=["L"], concepts=["C"]), 
             CharacterUpdate(characters=["C"], nodes=[], edges=[]),
             PlotPoint(events=["E"], nodes=[], edges=[])
