@@ -79,6 +79,9 @@ python -m src.cli.main interactive
 - 💭 `/plan <input>`: Pre-calculate subconscious reasoning for a beat.
 - 📋 `/state`: View your currently staged plan.
 - 🕸️ `/graph`: Inspect the world state.
+- 📜 `/history`: Show the session narrative log.
+- ⚡ `/transform <input>`: Evolve the world state without narrative.
+- ♻️ `/reset`: Wipe everything (Graph + History).
 
 ### 🧠 Standalone Planning 🔍
 Inspect the "thoughts" of the system without generating text. 🧪

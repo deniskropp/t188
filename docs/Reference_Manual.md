@@ -16,8 +16,9 @@ Starts a continuous narrative session. 🕹️
     - 💭 `/plan <input>`: Run the subconscious planner for a prompt and **stage** it for the next story beat.
     - 📋 `/state`: View the currently staged subconscious plan.
     - 🕸️ `/graph`: Display a summary table of the Knowledge Graph.
+    - 📜 `/history`: Show the conversation log of narrative segments.
     - ⚡ `/transform <input>`: Apply a graph update without generating prose.
-    - 🗑️ `/clear`: Wipe the Knowledge Graph and delete the persistent storage.
+    - 🗑️ `/clear` or ♻️ `/reset`: Wipe the Knowledge Graph and session history.
     - 🚪 `/exit` or `/quit`: Terminate the session.
 
 #### `run [INPUT]` 🏃‍♂️
