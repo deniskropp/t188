@@ -8,6 +8,7 @@ import os
 from src.metacognito.core import MetaCognito
 from src.shared.models import SynthesisOutput
 from src.shared.config import settings
+from src.shared.suggestions import SuggestionService
 
 app = FastAPI(
     title="MetaCognito API",
@@ -85,6 +86,17 @@ async def get_graph() -> GraphResponse:
             seen_edges.add(edge_key)
         
     return GraphResponse(nodes=nodes, edges=edges)
+    
+@app.get("/api/suggestions")
+async def get_suggestions() -> Dict[str, List[str]]:
+    """Generate and return story suggestions based on the current context."""
+    try:
+        graph_summary = system.graph_store.get_summary()
+        suggestions = await SuggestionService.get_suggestions(context=graph_summary)
+        return {"suggestions": suggestions}
+    except Exception as e:
+        print(f"Error generating suggestions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat")
 async def chat(input: ChatInput) -> Dict[str, Any]:

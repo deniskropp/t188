@@ -22,6 +22,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
   const [status, setStatus] = useState<Status | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'chat' | 'transform'>('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -41,6 +42,7 @@ function App() {
   useEffect(() => {
     fetchStatus();
     fetchGraph();
+    fetchSuggestions();
     const interval = setInterval(fetchStatus, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -60,6 +62,15 @@ function App() {
       setGraphData(res.data);
     } catch (err) {
       console.error('Failed to fetch graph', err);
+    }
+  };
+
+  const fetchSuggestions = async () => {
+    try {
+      const res = await axios.get('/api/suggestions');
+      setSuggestions(res.data.suggestions);
+    } catch (err) {
+      console.error('Failed to fetch suggestions', err);
     }
   };
 
@@ -97,6 +108,7 @@ function App() {
       setMessages(prev => [...prev, { role: 'system', content: `Error: Failed to process ${currentTab} request.` }]);
     } finally {
       setIsLoading(false);
+      fetchSuggestions(); // Refresh suggestions for context
     }
   };
 
@@ -193,6 +205,25 @@ function App() {
                       ? "No narrative history. Start by describing an action." 
                       : "No transformations applied yet. Enter an instruction to update the knowledge graph."}
                   </p>
+                  {activeTab === 'chat' && suggestions.length > 0 && (
+                    <div className="suggestions-container">
+                      <p className="suggestions-title">Inspiration:</p>
+                      <div className="suggestions-list-ui">
+                        {suggestions.map((s, i) => (
+                          <button 
+                            key={i} 
+                            className="suggestion-chip"
+                            onClick={() => {
+                              setInput(s);
+                              inputRef.current?.focus();
+                            }}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               {messages.map((msg: any, idx) => (

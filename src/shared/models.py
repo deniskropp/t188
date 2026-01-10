@@ -72,3 +72,7 @@ class Feedback(BaseModel):
     critique: str
     suggestion: str
     approved: bool
+
+class SuggestionList(BaseModel):
+    """Payload for dynamic story suggestions"""
+    suggestions: List[str] = Field(..., description="A list of creative story starting prompts")

@@ -28,13 +28,41 @@ async def _process_request(system: MetaCognito, user_input: str):
 def interactive():
     """Start an interactive narrative session."""
     console.print(Panel("[bold green]Welcome to MetaCognito[/bold green]\nType 'exit' or 'quit' to end session.", border_style="green"))
+    
+    from src.shared.suggestions import SuggestionService
+    
     system = MetaCognito()
     
     async def loop():
+        # Load Knowledge Graph summary as context
+        graph_summary = system.graph_store.get_summary()
+        
+        with console.status("[bold yellow]Generating story suggestions based on context...[/bold yellow]"):
+            suggestions = await SuggestionService.get_suggestions(context=graph_summary)
+        
+        # Display Suggestions
+        table = Table(title="Story Suggestions", show_header=False, box=None)
+        table.add_column("Index", style="cyan", width=4)
+        table.add_column("Suggestion", style="italic")
+        
+        for i, suggestion in enumerate(suggestions, 1):
+            table.add_row(f"[{i}]", suggestion)
+        
+        console.print(Panel(table, title="[bold yellow]Inspiration[/bold yellow]", border_style="yellow"))
+        console.print("[dim]Enter a number to use a suggestion, or type your own prompt.[/dim]\n")
+
         while True:
             user_input = Prompt.ask("[bold yellow]You[/bold yellow]")
             if user_input.lower() in ["exit", "quit"]:
                 break
+            
+            # Handle suggestion selection
+            if user_input.isdigit():
+                idx = int(user_input) - 1
+                if 0 <= idx < len(suggestions):
+                    user_input = suggestions[idx]
+                    console.print(f"[bold cyan]Using suggestion:[/bold cyan] {user_input}")
+            
             await _process_request(system, user_input)
             
     asyncio.run(loop())
