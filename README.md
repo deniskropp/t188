@@ -67,37 +67,37 @@ MetaCognito uses Pydantic-based settings that can be configured via environment 
     export METASYS_MISTRAL_API_KEY="your-key-here"
     ```
 
-## 🚀 Usage
+## 🚀 Usage ⚡
 
 ### 🎮 Interactive Mode (Recommended)
-Launch a continuous narrative session with full command support.
+Launch a continuous narrative session with full command support. 🕹️
 ```bash
 python -m src.cli.main interactive
 ```
-**Interactive Commands:**
-- `/suggest`: Get contextual story starters.
-- `/plan <input>`: Pre-calculate subconscious reasoning for a beat.
-- `/state`: View your currently staged plan.
-- `/graph`: Inspect the world state.
+**Interactive Commands:** ⌨️
+- 💡 `/suggest`: Get contextual story starters.
+- 💭 `/plan <input>`: Pre-calculate subconscious reasoning for a beat.
+- 📋 `/state`: View your currently staged plan.
+- 🕸️ `/graph`: Inspect the world state.
 
-### 🧠 Standalone Planning
-Inspect the "thoughts" of the system without generating text.
+### 🧠 Standalone Planning 🔍
+Inspect the "thoughts" of the system without generating text. 🧪
 ```bash
 python -m src.cli.main plan "The protagonist finds a glowing artifact."
 ```
 
-### 📈 Graph Inspection
+### 📈 Graph Inspection 🕵️
 ```bash
 python -m src.cli.main graph
 ```
 
-### 🧹 Resetting the System
-Clear the Knowledge Graph and delete persistent storage.
+### 🧹 Resetting the System ♻️
+Clear the Knowledge Graph and delete persistent storage. 🗑️
 ```bash
 python -m src.cli.main clear
 ```
 
-For more details, see the [Reference Manual](docs/Reference_Manual.md).
+For more details, see the [Reference Manual](docs/Reference_Manual.md). 📖
 
 ## 🎭 Illustrative Example
 
