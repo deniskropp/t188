@@ -4,6 +4,8 @@
 
 The **MetaCognito System** is an advanced narrative generation platform powered by a multi-agent AI architecture. 🤖 It leverages a dynamic Knowledge Graph and the custom `KickLang` orchestration protocol to create coherent, conflict-driven, and lore-consistent stories. 📚🌌
 
+[Reference Manual](docs/Reference_Manual.md) 📖
+
 ## 📖 Overview 🧐
 
 The system operates on the principle of distributed narrative responsibility. 🤝 Instead of a single model generating text, distinct "Roles" (Agents) manage specific aspects of the story world (Plot, Characters, World), all coordinated by the `MetaCognito` supervisor. 👔
