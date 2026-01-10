@@ -1,35 +1,35 @@
-# MetaCognito System
+# 🧠 MetaCognito System 🎭
 
-> **Meta-AI Storybook Orchestration Engine**
+> **✨ Meta-AI Storybook Orchestration Engine ✨**
 
-The **MetaCognito System** is an advanced narrative generation platform powered by a multi-agent AI architecture. It leverages a dynamic Knowledge Graph and the custom `KickLang` orchestration protocol to create coherent, conflict-driven, and lore-consistent stories.
+The **MetaCognito System** is an advanced narrative generation platform powered by a multi-agent AI architecture. 🤖 It leverages a dynamic Knowledge Graph and the custom `KickLang` orchestration protocol to create coherent, conflict-driven, and lore-consistent stories. 📚🌌
 
-## 📖 Overview
+## 📖 Overview 🧐
 
-The system operates on the principle of distributed narrative responsibility. Instead of a single model generating text, distinct "Roles" (Agents) manage specific aspects of the story world (Plot, Characters, World), all coordinated by the `MetaCognito` supervisor.
+The system operates on the principle of distributed narrative responsibility. 🤝 Instead of a single model generating text, distinct "Roles" (Agents) manage specific aspects of the story world (Plot, Characters, World), all coordinated by the `MetaCognito` supervisor. 👔
 
-### Core Objective
+### 🎯 Core Objective
 To generate continuous, evolving narratives where:
-1.  **Consistency** is maintained by a graph database.
-2.  **Character Arcs** are tracked and evolved logically.
-3.  **Conflict** is structurally engineered, not just hallucinated.
+1.  **Consistency** ⚖️ is maintained by a graph database.
+2.  **Character Arcs** 📈 are tracked and evolved logically.
+3.  **Conflict** ⚔️ is structurally engineered, not just hallucinated.
 
-## 🏗️ Architecture
+## 🏗️ Architecture 🏛️
 
-MetaCognito follows a **Subconscious → Conscious** orchestration flow:
+MetaCognito follows a **Subconscious → Conscious** orchestration flow: 🌊
 
-1.  **Subconscious Phase (The Planner)**:
-    - Analyzes the "hidden" intent of the user.
-    - Generates **Cues**, **Latent Patterns**, and a **Dream Narrative**.
-    - Produces an **Implicit Plan** that instructs the narrative agents.
-2.  **Conscious Phase (Narrative Agents)**:
-    - **WorldBuilder**, **CharacterManager**, and **PlotWeaver** update the state in parallel based on the implicit plan.
-    - **Storyteller** synthesizes the updates into the final narrative segment.
+1.  **Subconscious Phase (The Planner)** 💭:
+    - 🔍 Analyzes the "hidden" intent of the user.
+    - 💡 Generates **Cues**, **Latent Patterns**, and a **Dream Narrative**.
+    - 📝 Produces an **Implicit Plan** that instructs the narrative agents.
+2.  **Conscious Phase (Narrative Agents)** 🎭:
+    - 🌍 **WorldBuilder**, 👥 **CharacterManager**, and 🎞️ **PlotWeaver** update the state in parallel based on the implicit plan.
+    - ✍️ **Storyteller** synthesizes the updates into the final narrative segment.
 
-### The Knowledge Graph
+### 🕸️ The Knowledge Graph 🧠
 The central "brain" of the story. Entities are nodes, and relationships are edges.
--   **Nodes**: `Character`, `Location`, `Event`, `Item`, `Concept`, `SubconsciousSession`
--   **Edges**: `has_trait`, `located_in`, `precedes`, `interacts_with`, `possesses`, `identifies_cue`
+-   **Nodes** ⚪: `Character`, `Location`, `Event`, `Item`, `Concept`, `SubconsciousSession`
+-   **Edges** ➡️: `has_trait`, `located_in`, `precedes`, `interacts_with`, `possesses`, `identifies_cue`
 
 ### 2. The Roles (Agents)
 Specialized AI agents defined in `KickLang`:
