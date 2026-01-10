@@ -40,7 +40,7 @@ class MetaCognito:
         context = f"GRAPH SUMMARY:\n{graph_summary}\nHISTORY:\n{history_summary}"
 
         if callback:
-            await callback("Planning", "PlotWeaver, WorldBuilder, CharacterManager are initializing...")
+            await callback("KickLang Operation: Planning", "Invoking WorldBuilder, CharacterManager, and PlotWeaver...")
 
         # 1. Parallel processing of world, characters, and plot
         import asyncio
@@ -51,7 +51,7 @@ class MetaCognito:
         )
         
         if callback:
-             await callback("Coordination", "Agents have synchronized their updates.")
+             await callback("KickLang Operation: Coordination", "Synchronizing graph updates through Placebo Pipes.")
 
         # 2. Push to pipes
         world_pipe.push(world_state)
@@ -66,7 +66,7 @@ class MetaCognito:
         directive = self.resolver.resolve(p_data, w_data, c_data)
         
         if callback:
-             await callback("Synthesis", "Storyteller is weaving the narrative...")
+             await callback("KickLang Operation: Synthesis", "Storyteller is deriving narrative from graph state...")
 
         # 4. Refinement Loop
         approved = False

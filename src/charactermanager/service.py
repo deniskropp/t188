@@ -1,45 +1,41 @@
-from src.shared.models import StoryRequest, CharacterUpdate
+from src.shared.models import StoryRequest, CharacterUpdate, GraphNode
+from src.shared.base import BaseRole
 
-from src.shared.graph import GraphStore
-from src.shared.models import GraphNode
-
-class CharacterManagerService:
-    def __init__(self, graph_store: GraphStore):
-        self.graph_store = graph_store
-
+class CharacterManagerService(BaseRole):
     async def update_characters(self, request: StoryRequest, context: str = "") -> CharacterUpdate:
-        from src.shared.llm import get_llm_service
-        llm = get_llm_service()
-        
         prompt = f"""
-        Analyze the following story request and generate a CharacterUpdate.
-        Identify the characters involved, their traits, and relationships.
+        Role: CharacterManager
+        Objective: Track character arcs, traits, and dialogue dynamics through relations.
+        
+        Analyze the story request and generate a CharacterUpdate.
+        Focus on characters' evolution, their internal traits, and evolving relationships.
         
         Existing Context:
         {context}
         
         New Request: "{request.user_input}"
         
-        - characters: names of characters
-        - nodes: Full details for characters. Type must be "Character".
-        - edges: Relationships like 'has_trait', 'interacts_with', or 'possesses' (for Items).
+        Instructions:
+        1. Identify characters and their current state/arc progression.
+        2. Assign descriptive traits using 'has_trait' edge relations.
+        3. Define dialogue or social dynamics via 'interacts_with' or 'influenced_by'.
+        4. Track possession of items via 'possesses' (linking to World Items).
+        5. Node type must be "Character".
         """
         
-        char_update = await llm.generate_structured(prompt, CharacterUpdate)
+        char_update = await self._generate_structured(prompt, CharacterUpdate)
         
         # Sync with Graph
-        # Add or update nodes
-        for node in char_update.nodes:
-             self.graph_store.add_node(node)
+        self._sync_nodes(char_update.nodes)
         
         # Add basic characters if details missing
+        basic_nodes = []
         for char_name in char_update.characters:
             node_id = f"char:{char_name.lower()}"
             if not self.graph_store.get_node(node_id):
-                self.graph_store.add_node(GraphNode(id=node_id, type="Character", properties={"name": char_name}))
+                basic_nodes.append(GraphNode(id=node_id, type="Character", properties={"name": char_name}))
 
-        # Sync edges
-        for edge in char_update.edges:
-            self.graph_store.add_edge(edge)
+        self._sync_nodes(basic_nodes)
+        self._sync_edges(char_update.edges)
         
         return char_update

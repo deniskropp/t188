@@ -1,12 +1,38 @@
 import os
-from typing import Type, TypeVar, Protocol, runtime_checkable
+import json
+from typing import Type, TypeVar, Protocol, runtime_checkable, Any
 from pydantic import BaseModel
 from google import genai
 from mistralai import Mistral
 import httpx
+from rich.console import Console, Group
+from rich.panel import Panel
+from rich.syntax import Syntax
 from src.shared.config import settings, LLMProvider
 
 T = TypeVar("T", bound=BaseModel)
+console = Console()
+
+def _log_llm_event(provider: str, model: str, prompt: str, response: Any):
+    """Log LLM communication using rich panels."""
+    prompt_content = Syntax(prompt, "markdown", theme="monokai", word_wrap=True)
+    
+    if isinstance(response, BaseModel):
+        res_text = response.model_dump_json(indent=2)
+        res_lang = "json"
+    elif isinstance(response, (dict, list)):
+        res_text = json.dumps(response, indent=2)
+        res_lang = "json"
+    else:
+        res_text = str(response)
+        res_lang = "json" if res_text.strip().startswith(("{", "[")) else "markdown"
+
+    response_content = Syntax(res_text, res_lang, theme="monokai", word_wrap=True)
+
+    console.print(Group(
+        Panel(prompt_content, title=f"[bold blue]LLM Prompt ({provider}: {model})[/bold blue]", border_style="blue"),
+        Panel(response_content, title=f"[bold green]LLM Response ({provider}: {model})[/bold green]", border_style="green")
+    ))
 
 @runtime_checkable
 class LLMService(Protocol):
@@ -30,7 +56,9 @@ class GeminiService:
             model=self.model_name,
             contents=prompt
         )
-        return response.text
+        res_text = response.text
+        _log_llm_event("Gemini", self.model_name, prompt, res_text)
+        return res_text
 
     async def generate_structured(self, prompt: str, schema: Type[T]) -> T:
         response = await self.client.aio.models.generate_content(
@@ -41,9 +69,9 @@ class GeminiService:
                 'response_schema': schema
             }
         )
-        if response.parsed:
-             return response.parsed
-        return schema.model_validate_json(response.text)
+        parsed = response.parsed if response.parsed else schema.model_validate_json(response.text)
+        _log_llm_event("Gemini", self.model_name, prompt, parsed)
+        return parsed
 
 class MistralService:
     def __init__(self):
@@ -59,7 +87,9 @@ class MistralService:
             model=self.model_name,
             messages=[{"role": "user", "content": prompt}]
         )
-        return response.choices[0].message.content
+        res_text = response.choices[0].message.content
+        _log_llm_event("Mistral", self.model_name, prompt, res_text)
+        return res_text
 
     async def generate_structured(self, prompt: str, schema: Type[T]) -> T:
         response = await self.client.chat.parse_async(
@@ -67,7 +97,9 @@ class MistralService:
             messages=[{"role": "user", "content": prompt}],
             response_format=schema
         )
-        return response.choices[0].message.parsed
+        parsed = response.choices[0].message.parsed
+        _log_llm_event("Mistral", self.model_name, prompt, parsed)
+        return parsed
 
 class OllamaService:
     def __init__(self):
@@ -85,7 +117,9 @@ class OllamaService:
             }
         )
         response.raise_for_status()
-        return response.json()["response"]
+        res_text = response.json()["response"]
+        _log_llm_event("Ollama", self.model_name, prompt, res_text)
+        return res_text
 
     async def generate_structured(self, prompt: str, schema: Type[T]) -> T:
         prompt_with_schema = f"{prompt}\n\nReturn JSON only, matching this schema: {schema.model_json_schema()}"
@@ -100,7 +134,9 @@ class OllamaService:
         )
         response.raise_for_status()
         data = response.json()["response"]
-        return schema.model_validate_json(data)
+        parsed = schema.model_validate_json(data)
+        _log_llm_event("Ollama", self.model_name, prompt, parsed)
+        return parsed
 
 def get_llm_service() -> LLMService:
     if settings.llm_provider == LLMProvider.GEMINI:
