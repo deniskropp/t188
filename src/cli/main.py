@@ -98,8 +98,10 @@ def interactive():
                 table = Table(title="Knowledge Graph Entities")
                 table.add_column("ID", style="cyan")
                 table.add_column("Type", style="magenta")
+                table.add_column("Description", style="green")
                 for node_id, data in system.graph_store.graph.nodes(data=True):
-                    table.add_row(str(node_id), data.get("type", "Unknown"))
+                    desc = data.get("description") or data.get("desc") or "N/A"
+                    table.add_row(str(node_id), data.get("type", "Unknown"), desc)
                 console.print(table)
                 continue
 
@@ -167,10 +169,12 @@ def graph():
     table = Table(title="Knowledge Graph Entities")
     table.add_column("ID", style="cyan")
     table.add_column("Type", style="magenta")
+    table.add_column("Description", style="yellow")
     table.add_column("Properties", style="green")
 
     for node_id, data in system.graph_store.graph.nodes(data=True):
-        table.add_row(str(node_id), data.get("type", "Unknown"), str(data))
+        desc = data.get("description") or data.get("desc") or "N/A"
+        table.add_row(str(node_id), data.get("type", "Unknown"), desc, str(data))
 
     console.print(table)
 
