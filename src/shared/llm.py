@@ -3,6 +3,7 @@ from typing import Type, TypeVar, Protocol, runtime_checkable
 from pydantic import BaseModel
 from google import genai
 from mistralai import Mistral
+import httpx
 from src.shared.config import settings, LLMProvider
 
 T = TypeVar("T", bound=BaseModel)
@@ -68,10 +69,45 @@ class MistralService:
         )
         return response.choices[0].message.parsed
 
+class OllamaService:
+    def __init__(self):
+        self.base_url = settings.ollama_base_url
+        self.model_name = settings.ollama_model
+        self.client = httpx.AsyncClient(base_url=self.base_url, timeout=600.0)
+
+    async def generate_text(self, prompt: str) -> str:
+        response = await self.client.post(
+            "/api/generate",
+            json={
+                "model": self.model_name,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        response.raise_for_status()
+        return response.json()["response"]
+
+    async def generate_structured(self, prompt: str, schema: Type[T]) -> T:
+        prompt_with_schema = f"{prompt}\n\nReturn JSON only, matching this schema: {schema.model_json_schema()}"
+        response = await self.client.post(
+            "/api/generate",
+            json={
+                "model": self.model_name,
+                "prompt": prompt_with_schema,
+                "format": "json",
+                "stream": False
+            }
+        )
+        response.raise_for_status()
+        data = response.json()["response"]
+        return schema.model_validate_json(data)
+
 def get_llm_service() -> LLMService:
     if settings.llm_provider == LLMProvider.GEMINI:
         return GeminiService()
     elif settings.llm_provider == LLMProvider.MISTRAL:
         return MistralService()
+    elif settings.llm_provider == LLMProvider.OLLAMA:
+        return OllamaService()
     else:
         raise ValueError(f"Unsupported LLM provider: {settings.llm_provider}")

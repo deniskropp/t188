@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class LLMProvider(str, Enum):
     GEMINI = "gemini"
     MISTRAL = "mistral"
+    OLLAMA = "ollama"
 
 
 class Settings(BaseSettings):
@@ -16,6 +17,9 @@ class Settings(BaseSettings):
     
     mistral_api_key: str | None = None
     mistral_model: str = "devstral-medium-latest"
+    
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "hf.co/tensorblock/NSFW_DPO_Noromaid-7b-GGUF"
     
     llm_provider: LLMProvider = LLMProvider.MISTRAL
     
