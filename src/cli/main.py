@@ -27,42 +27,103 @@ async def _process_request(system: MetaCognito, user_input: str):
 @app.command()
 def interactive():
     """Start an interactive narrative session."""
-    console.print(Panel("[bold green]Welcome to MetaCognito[/bold green]\nType 'exit' or 'quit' to end session.", border_style="green"))
+    console.print(Panel("[bold green]Welcome to MetaCognito[/bold green]\nType 'exit' or '/help' for options.", border_style="green"))
     
     from src.shared.suggestions import SuggestionService
-    
-    system = MetaCognito()
-    
-    async def loop():
-        # Load Knowledge Graph summary as context
-        graph_summary = system.graph_store.get_summary()
-        
-        with console.status("[bold yellow]Generating story suggestions based on context...[/bold yellow]"):
-            suggestions = await SuggestionService.get_suggestions(context=graph_summary)
-        
-        # Display Suggestions
-        table = Table(title="Story Suggestions", show_header=False, box=None)
-        table.add_column("Index", style="cyan", width=4)
-        table.add_column("Suggestion", style="italic")
-        
-        for i, suggestion in enumerate(suggestions, 1):
-            table.add_row(f"[{i}]", suggestion)
-        
-        console.print(Panel(table, title="[bold yellow]Inspiration[/bold yellow]", border_style="yellow"))
-        console.print("[dim]Enter a number to use a suggestion, or type your own prompt.[/dim]\n")
+    from prompt_toolkit import PromptSession
+    from prompt_toolkit.history import FileHistory
+    from prompt_toolkit.completion import Completer, Completion
+    from prompt_toolkit.styles import Style
+    import os
 
+    system = MetaCognito()
+    history_path = os.path.expanduser("~/.metacognito_history")
+    session = PromptSession(history=FileHistory(history_path))
+
+    class MetaCompleter(Completer):
+        def __init__(self, system, suggestions_ref):
+            self.system = system
+            self.suggestions_ref = suggestions_ref
+            self.commands = ["/help", "/exit", "/quit", "/clear", "/graph", "/transform", "/suggest"]
+
+        def get_completions(self, document, complete_event):
+            text = document.text_before_cursor
+            if text.startswith("/"):
+                for cmd in self.commands:
+                    if cmd.startswith(text):
+                        yield Completion(cmd, start_position=-len(text))
+                return
+
+            # Offer suggestions if the line is empty or just starting
+            if not text.strip() and self.suggestions_ref["list"]:
+                for idx, sugg in enumerate(self.suggestions_ref["list"], 1):
+                    # Show index and a bit of the text in the completion menu
+                    display_text = f"[{idx}] {sugg[:50]}..."
+                    yield Completion(str(idx), start_position=0, display=display_text)
+                    yield Completion(sugg, start_position=-len(text))
+
+    suggestions_ref = {"list": []}
+    completer = MetaCompleter(system, suggestions_ref)
+
+    async def loop():
         while True:
-            user_input = Prompt.ask("[bold yellow]You[/bold yellow]")
-            if user_input.lower() in ["exit", "quit"]:
+            try:
+                # Use prompt_toolkit for the actual input
+                user_input = await session.prompt_async(
+                    "You > ",
+                    completer=completer,
+                    complete_while_typing=True
+                )
+            except (EOFError, KeyboardInterrupt):
                 break
-            
-            # Handle suggestion selection
+
+            user_input = user_input.strip()
+            if not user_input:
+                continue
+
+            if user_input.lower() in ["exit", "quit", "/exit", "/quit"]:
+                break
+
+            if user_input == "/help":
+                console.print("[bold cyan]Commands:[/bold cyan] /clear, /graph, /transform, /exit")
+                continue
+
+            if user_input == "/clear":
+                system.graph_store.clear()
+                console.print("[bold green]Success:[/bold green] Knowledge Graph cleared.")
+                continue
+
+            if user_input == "/graph":
+                # Reuse the logic from graph command (simplified here)
+                table = Table(title="Knowledge Graph Entities")
+                table.add_column("ID", style="cyan")
+                table.add_column("Type", style="magenta")
+                for node_id, data in system.graph_store.graph.nodes(data=True):
+                    table.add_row(str(node_id), data.get("type", "Unknown"))
+                console.print(table)
+                continue
+
+            if user_input == "/suggest":
+                graph_summary = system.graph_store.get_summary()
+                with console.status("[bold yellow]Generating story suggestions...[/bold yellow]"):
+                    suggestions_ref["list"] = await SuggestionService.get_suggestions(context=graph_summary)
+                
+                table = Table(show_header=False, box=None)
+                table.add_column("Index", style="cyan", width=4)
+                table.add_column("Suggestion", style="italic")
+                for i, suggestion in enumerate(suggestions_ref["list"], 1):
+                    table.add_row(f"[{i}]", suggestion)
+                
+                console.print(Panel(table, title="[bold yellow]Inspiration (Tab for more)[/bold yellow]", border_style="yellow"))
+                continue
+
+            # Handle numeric suggestion selection
             if user_input.isdigit():
                 idx = int(user_input) - 1
-                if 0 <= idx < len(suggestions):
-                    user_input = suggestions[idx]
+                if 0 <= idx < len(suggestions_ref["list"]):
+                    user_input = suggestions_ref["list"][idx]
                     console.print(f"[bold cyan]Using suggestion:[/bold cyan] {user_input}")
-            
+
             await _process_request(system, user_input)
             
     asyncio.run(loop())

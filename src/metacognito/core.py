@@ -36,7 +36,7 @@ class MetaCognito:
 
         # Prepare Context
         graph_summary = self.graph_store.get_summary()
-        history_summary = "\n".join([f"Q: {h['user']} A: {h['story'][:100]}..." for h in self.history])
+        history_summary = "\n".join([f"Q: {h['user']} A: {str(h["story"])[:100]}..." for h in self.history])
         context = f"GRAPH SUMMARY:\n{graph_summary}\nHISTORY:\n{history_summary}"
 
         if callback:
@@ -126,7 +126,7 @@ class MetaCognito:
         
         # Prepare Context
         graph_summary = self.graph_store.get_summary()
-        history_summary = "\n".join([f"Q: {h['user']} A: {h['story'][:100]}..." for h in self.history])
+        history_summary = "\n".join([f"Q: {h['user']} A: {str(h["story"])[:100]}..." for h in self.history])
         context = f"GRAPH SUMMARY:\n{graph_summary}\nHISTORY:\n{history_summary}"
 
         if callback:
