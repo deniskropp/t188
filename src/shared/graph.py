@@ -125,7 +125,11 @@ class GraphStore:
                 # Skip subconscious edges
                 if "sub_session" in str(source):
                     continue
-                summary.append(f"- {source} --({key})--> {target}")
+                
+                if key == "influenced_by":
+                    summary.append(f"- [INFLUENCE] {source} is influenced by {target}")
+                else:
+                    summary.append(f"- {source} --({key})--> {target}")
                 edge_count += 1
             if edge_count == 0 and self.graph.edges:
                 summary.append("(Narrative relationships are stored but omitted from this summary)")
