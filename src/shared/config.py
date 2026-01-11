@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.0-flash-exp"
     
     mistral_api_key: str | None = None
-    mistral_model: str = "devstral-medium-latest"
+    mistral_model: str = "mistral-medium-latest"
     
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "hf.co/tensorblock/NSFW_DPO_Noromaid-7b-GGUF"
