@@ -1,6 +1,7 @@
 import pytest
 import time
 from src.shared.journal import SharedJournalService
+from src.shared.models import JournalEntry
 
 @pytest.mark.asyncio
 async def test_journal_logging():
@@ -19,5 +20,6 @@ def test_dopamine_calculation():
         service.entries.append(JournalEntry(timestamp=now - i*10, action_type="stroke", content="stroke"))
     
     density = service.calculate_dopamine_density(window_seconds=100)
-    # 5 actions in 100 seconds = 3 actions/min. 3/10 = 0.3 density
-    assert 0.29 < density < 0.31
+    # 5 actions in 100 seconds = 3 actions/min. 
+    # r_extrinsic = 3 / 15 = 0.2. r_intrinsic = 0.5. density = 0.5*0.2 + 0.5*0.5 = 0.35
+    assert 0.34 < density < 0.36

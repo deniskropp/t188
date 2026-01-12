@@ -4,7 +4,7 @@
 
 The **MetaCognito System** is an advanced narrative generation platform powered by a multi-agent AI architecture. 🤖 It leverages a dynamic Knowledge Graph and the custom `KickLang` orchestration protocol to create coherent, conflict-driven, and lore-consistent stories. 📚🌌
 
-[Reference Manual](docs/Reference_Manual.md) 📖
+[Reference Manual](docs/Reference_Manual.md) 📖 | [Web Interface](web/README.md) 🖥️ | [API Server](src/api/README.md) 🔌
 
 ## 📖 Overview 🧐
 
@@ -101,6 +101,20 @@ Clear the Knowledge Graph and delete persistent storage. 🗑️
 ```bash
 python -m src.cli.main clear
 ```
+
+### 🖥️ Full Stack Web Interface 🌐
+Experience the system with a modern UI.
+
+1.  **Start the API Server**:
+    See [API Server README](src/api/README.md).
+    ```bash
+    uvicorn src.api.main:app --reload
+    ```
+2.  **Start the Frontend**:
+    See [Web Interface README](web/README.md).
+    ```bash
+    cd web && pnpm dev
+    ```
 
 For more details, see the [Reference Manual](docs/Reference_Manual.md). 📖
 

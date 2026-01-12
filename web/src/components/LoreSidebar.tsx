@@ -65,11 +65,12 @@ export const LoreSidebar: React.FC<LoreSidebarProps> = ({ entities, selectedNode
     return idxA - idxB;
   });
 
+
   return (
-    <div className="bg-[#0a0a0c] h-full rounded-[2.5rem] overflow-hidden flex flex-col border border-white/5 shadow-2xl">
-      <div className="p-8 border-b border-white/5 bg-[#0f1117]">
-        <h2 className="text-xl font-bold text-white tracking-tight leading-none mb-1">Lore Library</h2>
-        <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.1em]">Foundational knowledge of the world</p>
+    <div className="bg-meta-panel h-full rounded-xl overflow-hidden flex flex-col border border-meta-border shadow-2xl transition-colors duration-300">
+      <div className="p-6 border-b border-meta-border bg-meta-surface/50">
+        <h2 className="text-xl font-bold text-meta-main tracking-tight leading-none mb-1">Lore Library</h2>
+        <p className="text-[10px] text-meta-muted font-bold uppercase tracking-[0.1em]">Foundational knowledge of the world</p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 py-6 space-y-6 no-scrollbar">
@@ -77,18 +78,18 @@ export const LoreSidebar: React.FC<LoreSidebarProps> = ({ entities, selectedNode
            <motion.div 
              initial={{ opacity: 0, scale: 0.95 }}
              animate={{ opacity: 1, scale: 1 }}
-             className="mx-4 p-5 rounded-[2rem] bg-meta-accent/10 border border-meta-accent/30 shadow-lg shadow-meta-accent/5 mb-8"
+             className="mx-4 p-5 rounded-xl bg-meta-accent/10 border border-meta-accent/30 shadow-lg shadow-meta-accent/5 mb-8"
            >
               <div className="flex items-center justify-between mb-4">
                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-meta-accent">Entity Detail</span>
-                 <button onClick={() => onNodeClick?.('')} className="text-zinc-600 hover:text-white text-[9px] uppercase font-black tracking-widest transition-colors">Close</button>
+                 <button onClick={() => onNodeClick?.('')} className="text-meta-muted hover:text-meta-main text-[9px] uppercase font-black tracking-widest transition-colors">Close</button>
               </div>
-              <h3 className="text-xl font-black italic tracking-tighter text-white mb-4">{selectedEntity.label}</h3>
+              <h3 className="text-xl font-black italic tracking-tighter text-meta-main mb-4">{selectedEntity.label}</h3>
               <div className="space-y-4">
                  {selectedEntity.properties && Object.entries(selectedEntity.properties).map(([k, v]) => (
-                    <div key={k} className="bg-white/5 p-3 rounded-2xl border border-white/5">
-                       <div className="text-[8px] uppercase font-black tracking-[0.2em] text-zinc-600 mb-1">{k}</div>
-                       <div className="text-xs text-zinc-300 font-medium leading-relaxed">{String(v)}</div>
+                    <div key={k} className="bg-meta-surface-hover p-3 rounded-2xl border border-meta-border">
+                       <div className="text-[8px] uppercase font-black tracking-[0.2em] text-meta-muted mb-1">{k}</div>
+                       <div className="text-xs text-meta-main font-medium leading-relaxed">{String(v)}</div>
                     </div>
                  ))}
               </div>
@@ -97,8 +98,8 @@ export const LoreSidebar: React.FC<LoreSidebarProps> = ({ entities, selectedNode
 
         {sortedTypes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-10">
-            <Book size={64} strokeWidth={1} />
-            <p className="text-[10px] uppercase font-black tracking-widest mt-4">Library Empty</p>
+            <Book size={64} strokeWidth={1} className="text-meta-muted" />
+            <p className="text-[10px] uppercase font-black tracking-widest mt-4 text-meta-muted">Library Empty</p>
           </div>
         ) : (
           sortedTypes.map((type, gIdx) => {
@@ -113,8 +114,8 @@ export const LoreSidebar: React.FC<LoreSidebarProps> = ({ entities, selectedNode
                 className="space-y-1"
               >
                 <div className="flex items-center gap-2 mb-2 px-4 group">
-                  <Icon size={12} className="text-meta-accent/60 group-hover:text-meta-accent transition-colors" />
-                  <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 group-hover:text-zinc-400 transition-colors">
+                  <Icon size={12} className="text-meta-muted group-hover:text-meta-accent transition-colors" />
+                  <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-meta-muted group-hover:text-meta-main transition-colors">
                     {labelOverrides[type] || type.toUpperCase()}
                   </h3>
                 </div>
@@ -126,13 +127,13 @@ export const LoreSidebar: React.FC<LoreSidebarProps> = ({ entities, selectedNode
                         key={item.id}
                         whileHover={{ x: 4 }}
                         onClick={() => onNodeClick?.(item.id)}
-                        className={`group p-4 rounded-2xl cursor-pointer transition-all border ${
+                        className={`group p-4 rounded-lg cursor-pointer transition-all border ${
                           isSelected 
                             ? 'bg-meta-accent text-white shadow-xl shadow-meta-accent/20 border-meta-accent/50' 
-                            : 'bg-white/[0.02] hover:bg-white/[0.05] border-transparent hover:border-white/5'
+                            : 'bg-meta-surface-hover hover:bg-meta-surface border-transparent hover:border-meta-border'
                         }`}
                       >
-                        <div className={`text-[11px] font-bold transition-colors ${isSelected ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-200'}`}>
+                        <div className={`text-[11px] font-bold transition-colors ${isSelected ? 'text-white' : 'text-meta-muted group-hover:text-meta-main'}`}>
                           {item.label}
                         </div>
                       </motion.div>
@@ -145,8 +146,8 @@ export const LoreSidebar: React.FC<LoreSidebarProps> = ({ entities, selectedNode
         )}
       </div>
       
-      <div className="p-6 bg-[#0f1117] border-t border-white/5">
-         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-zinc-700">
+      <div className="p-6 bg-meta-surface/50 border-t border-meta-border">
+         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-meta-muted">
             <span className="flex items-center gap-2">
                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                Graph Health

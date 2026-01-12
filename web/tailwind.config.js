@@ -7,13 +7,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        'meta-bg': '#0a0a0c',
-        'meta-card': 'rgba(23, 23, 27, 0.8)',
-        'meta-accent': '#8b5cf6',
-        'meta-accent-glow': 'rgba(139, 92, 246, 0.4)',
+        'meta-bg': 'var(--bg-app)',
+        'meta-panel': 'var(--bg-panel)',
+        'meta-surface': 'var(--bg-surface)',
+        'meta-surface-hover': 'var(--bg-surface-hover)',
+        'meta-card': 'var(--bg-surface)', 
+        
+        'meta-main': 'var(--text-main)',
+        'meta-muted': 'var(--text-muted)',
+        
+        'meta-border': 'var(--border-subtle)',
+        'meta-border-strong': 'var(--border-strong)',
+        
+        'meta-accent': 'var(--color-accent)',
+        'meta-accent-glow': 'var(--color-accent-glow)',
       },
       backgroundImage: {
-        'meta-gradient': 'radial-gradient(circle at top right, #1e1b4b, #000000)',
+        'meta-gradient': 'var(--bg-gradient)',
       },
       backdropBlur: {
         'xs': '2px',

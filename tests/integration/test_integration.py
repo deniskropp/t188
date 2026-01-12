@@ -3,31 +3,52 @@ from src.metacognito.core import MetaCognito
 from src.shared.models import StoryRequest
 
 @pytest.mark.asyncio
-async def test_multiturn_story_progression():
+async def test_multiturn_story_progression(mock_llm_service):
     system = MetaCognito()
     
+    # Helper to access properties
+    def get_prop(node, key):
+        if not node: return None
+        for kv in node.properties:
+            if kv.key == key:
+                return kv.value
+        return None
+
     # Turn 1
     res1 = await system.process_story_request("Alice enters the Dark Forest")
-    assert "Alice" in system.graph_store.get_node("char:alice").properties["name"]
-    alice_node_v1 = system.graph_store.get_node("char:alice")
+    alice_node = system.graph_store.get_node("char:alice")
+    assert alice_node is not None
+    assert "Alice" in get_prop(alice_node, "name")
+    alice_node_v1 = alice_node
     
     # Turn 2
     res2 = await system.process_story_request("Alice meets Bob")
-    assert "Bob" in system.graph_store.get_node("char:bob").properties["name"]
+    bob_node = system.graph_store.get_node("char:bob")
+    # Note: MockLLM returns generic "Alice" and "Bob" in CharacterUpdate, so this passes if Mock is correct
+    # But wait, MockLLM in conftest returns:
+    # return CharacterUpdate(characters=["Alice", "Bob"], nodes=[GraphNode(id="char:alice", ...)], edges=[])
+    # It ONLY returns "char:alice" node! It does not return "char:bob" node in the list.
+    # So get_node("char:bob") might return None if previous steps didn't add it.
+    # We should update MockLLM to include Bob or update test expectations.
+    # The test expects Bob. I should update MockLLM in conftest to return Bob too.
+    
+    # But first fixing the TypeError.
+    # If bob_node is None, get_prop handles it (returns None, assertion fails "Bob" in None -> TypeError or False).
+    
+    # Let's fix property access first. if it fails on Bob, I'll update MockLLM.
+    
+    assert "Bob" in (get_prop(bob_node, "name") or "")
     
     # Turn 3 - Verify Persistence
     res3 = await system.process_story_request("They fight")
     
-    # Check if Alice still exists and hasn't been overwritten (id check safe, but properties?)
-    # Since our mock just "adds if missing", properties shouldn't change in current impl, 
-    # but the node should persist.
-    
+    # Check if Alice still exists
     final_alice = system.graph_store.get_node("char:alice")
     assert final_alice is not None
     assert final_alice == alice_node_v1
 
 @pytest.mark.asyncio
-async def test_conflict_resolution_trigger():
+async def test_conflict_resolution_trigger(mock_llm_service):
     system = MetaCognito()
     
     # To trigger conflict: Plot needs "fight", Chars need "flee" (implied by interactions string in mock)

@@ -1,73 +1,56 @@
-# React + TypeScript + Vite
+# 🖥️ MetaCognito Web Interface
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The **MetaCognito Web Interface** is a modern, reactive frontend designed to interact with the MetaCognito Orchestration Engine. It provides a visual narrative experience, real-time graph exploration, and direct control over the story generation process.
 
-Currently, two official plugins are available:
+Built with **React**, **Vite**, and **TailwindCSS**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🌟 Features
 
-## React Compiler
+-   **Interactive Chat**: Conversational interface for guiding the narrative.
+-   **Live Graph Visualization**: See the Knowledge Graph evolve in real-time as the story progresses.
+-   **Event Stream**: Monitor internal agent decisions and system events via Server-Sent Events (SSE).
+-   **System Controls**: Reset, transform, and manage the story state.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Getting Started
 
-## Expanding the ESLint configuration
+### Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+-   **Node.js** (v18+ recommended)
+-   **pnpm** (recommended package manager)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 📦 Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Navigate to the `web` directory and install dependencies:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd web
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 🏃 Running the Application
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Start the development server:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm dev
 ```
+
+The application will typically be available at `http://localhost:5173`.
+
+> **Note**: Ensure the [API Server](../src/api/README.md) is running on port 8000 for the frontend to function correctly.
+
+## 🛠️ Configuration
+
+The frontend connects to the backend API. Default configuration assumes the API is at `http://localhost:8000`.
+
+To build for production:
+
+```bash
+pnpm build
+```
+
+## 📂 Structure
+
+-   `src/components`: UI components (Graph, Chat, Controls).
+-   `src/hooks`: Custom React hooks for API interaction.
+-   `src/api`: API client functions.

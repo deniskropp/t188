@@ -4,6 +4,7 @@ import { GraphViewer } from './components/GraphViewer';
 import { Chat } from './components/Chat';
 import { LoreSidebar } from './components/LoreSidebar';
 import { LoopDashboard } from './components/LoopDashboard';
+import { ThemeToggle } from './components/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrainCircuit, Info, Layers } from 'lucide-react';
 import { useCognitive } from './hooks/useCognitive';
@@ -127,26 +128,29 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#0a0c10] text-white overflow-hidden font-sans selection:bg-meta-accent/30">
+    <div className="flex h-screen w-full bg-meta-bg text-meta-main overflow-hidden font-sans selection:bg-meta-accent/30 transition-colors duration-300">
       {/* 1. Left Navigation Sidebar */}
-      <aside className="w-[320px] shrink-0 border-r border-white/5 bg-[#0f1117] flex flex-col p-4 gap-6 relative z-30">
-        <header className="flex items-center gap-3 mb-4">
-           <div className="p-2.5 bg-meta-accent/10 rounded-2xl border border-meta-accent/20 shadow-lg shadow-meta-accent/5">
-              <BrainCircuit className="text-meta-accent w-6 h-6" />
+      <aside className="w-[320px] shrink-0 border-r border-meta-border bg-meta-panel flex flex-col p-4 gap-6 relative z-30 transition-colors duration-300">
+        <header className="flex items-center justify-between mb-4">
+           <div className="flex items-center gap-3">
+             <div className="p-2.5 bg-meta-accent/10 rounded-lg border border-meta-accent/20 shadow-lg shadow-meta-accent/5">
+                <BrainCircuit className="text-meta-accent w-6 h-6" />
+             </div>
+             <div>
+                <h1 className="text-xl font-black tracking-tighter uppercase italic text-meta-main">MetaCognito</h1>
+                <div className="text-[9px] text-meta-muted font-bold tracking-[0.2em] uppercase">Orchestration Engine</div>
+             </div>
            </div>
-           <div>
-              <h1 className="text-xl font-black tracking-tighter uppercase italic bg-gradient-to-br from-white to-zinc-500 bg-clip-text text-transparent">MetaCognito</h1>
-              <div className="text-[9px] text-zinc-600 font-bold tracking-[0.2em] uppercase">Orchestration Engine</div>
-           </div>
+           <ThemeToggle />
         </header>
 
         {/* Global Navigation */}
         <nav className="flex flex-col gap-1">
-          <button className="flex items-center gap-3 p-3 rounded-xl bg-meta-accent/10 text-meta-accent border border-meta-accent/10 font-bold text-xs uppercase tracking-widest transition-all">
+          <button className="flex items-center gap-3 p-3 rounded-lg bg-meta-accent/10 text-meta-accent border border-meta-accent/10 font-bold text-xs uppercase tracking-widest transition-all">
              <BrainCircuit size={18} />
              Story Engine
           </button>
-          <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-zinc-500 hover:text-zinc-300 font-bold text-xs uppercase tracking-widest transition-all">
+          <button className="flex items-center gap-3 p-3 rounded-lg hover:bg-meta-surface-hover text-meta-muted hover:text-meta-main font-bold text-xs uppercase tracking-widest transition-all">
              <Layers size={18} />
              Transformations
           </button>
@@ -161,29 +165,29 @@ function App() {
         </div>
 
         {/* System Summary */}
-        <div className="bg-[#161922] p-6 rounded-[2rem] border border-white/5 mt-auto">
-            <div className="flex items-center justify-between mb-5">
-               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 italic">System Status</span>
+        <div className="bg-meta-surface p-4 rounded-xl border border-meta-border mt-auto transition-colors duration-300">
+            <div className="flex items-center justify-between mb-3">
+               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-meta-muted italic">System Status</span>
                <div className="flex items-center gap-2 px-3 py-1 bg-green-500/5 rounded-full border border-green-500/20">
                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                   <span className="text-[8px] font-black text-green-500 uppercase tracking-widest">Online</span>
                </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3 mb-6">
-               <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/5">
-                  <div className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Entities</div>
-                  <div className="text-2xl font-black italic tracking-tighter">{nodes.length}</div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+               <div className="bg-meta-surface-hover p-3 rounded-lg border border-meta-border">
+                  <div className="text-[8px] font-black text-meta-muted uppercase tracking-widest mb-1.5">Entities</div>
+                  <div className="text-2xl font-black italic tracking-tighter text-meta-main">{nodes.length}</div>
                </div>
-               <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/5">
-                  <div className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Relations</div>
-                  <div className="text-2xl font-black italic tracking-tighter">{edges.length}</div>
+               <div className="bg-meta-surface-hover p-3 rounded-lg border border-meta-border">
+                  <div className="text-[8px] font-black text-meta-muted uppercase tracking-widest mb-1.5">Relations</div>
+                  <div className="text-2xl font-black italic tracking-tighter text-meta-main">{edges.length}</div>
                </div>
             </div>
 
             <button 
               onClick={handleClear}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-[1.5rem] border border-red-500/10 text-red-500/40 hover:text-red-400 hover:bg-red-500/5 transition-all text-[9px] font-black uppercase tracking-[0.2em]"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/5 transition-all text-[9px] font-black uppercase tracking-[0.2em]"
             >
                <Info size={14} className="opacity-50" />
                Clear World State
@@ -192,7 +196,7 @@ function App() {
       </aside>
 
       {/* 2. Main Content Area: Immersive Graph + Chat */}
-      <main className="flex-1 relative flex flex-col bg-[#0d0f14]">
+      <main className="flex-1 relative flex flex-col bg-meta-bg transition-colors duration-300">
         {/* Immersive Graph Viewer */}
         <div className="absolute inset-0 z-0">
            <GraphViewer 
@@ -204,10 +208,10 @@ function App() {
         </div>
 
         {/* Floating Top Bar (Controls for Graph) */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 p-1 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
-           <button className="px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all">Search Entities</button>
-           <div className="w-px h-4 bg-white/10 mx-1" />
-           <button className="px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all">Recent Pins</button>
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 p-1 bg-meta-surface/80 backdrop-blur-xl border border-meta-border rounded-2xl shadow-2xl">
+           <button className="px-4 py-2 hover:bg-meta-surface-hover rounded-xl text-[10px] font-black uppercase tracking-widest text-meta-muted hover:text-meta-main transition-all">Search Entities</button>
+           <div className="w-px h-4 bg-meta-border mx-1" />
+           <button className="px-4 py-2 hover:bg-meta-surface-hover rounded-xl text-[10px] font-black uppercase tracking-widest text-meta-muted hover:text-meta-main transition-all">Recent Pins</button>
         </div>
 
         {/* Floating Right Sidebar: Lore Info Box (Optional Overlay) */}
@@ -242,7 +246,7 @@ function App() {
                      <button 
                        key={i} 
                        onClick={() => handleSendMessage(s)}
-                       className="px-4 py-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full text-[10px] font-black text-meta-accent hover:border-meta-accent/50 hover:bg-meta-accent/10 transition-all shadow-2xl uppercase tracking-tighter"
+                       className="px-4 py-2 bg-meta-card/90 backdrop-blur-2xl border border-meta-border rounded-full text-[10px] font-black text-meta-accent hover:border-meta-accent/50 hover:bg-meta-accent/10 transition-all shadow-xl uppercase tracking-tighter"
                      >
                        {s}
                      </button>
@@ -262,7 +266,7 @@ function App() {
               </div>
               
               <div className="flex justify-center pointer-events-auto">
-                 <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-[0.3em] bg-black/40 px-4 py-1.5 rounded-full border border-white/5 backdrop-blur-md">
+                 <div className="text-[9px] text-meta-muted font-bold uppercase tracking-[0.3em] bg-meta-surface/60 px-4 py-1.5 rounded-full border border-meta-border backdrop-blur-md">
                     Orchestration Engine Ready
                  </div>
               </div>

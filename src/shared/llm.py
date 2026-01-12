@@ -1,4 +1,5 @@
 import os
+import asyncio
 import json
 from typing import Type, TypeVar, Protocol, runtime_checkable, Any
 from pydantic import BaseModel
@@ -83,23 +84,62 @@ class MistralService:
         self.model_name = settings.mistral_model
 
     async def generate_text(self, prompt: str) -> str:
-        response = await self.client.chat.complete_async(
-            model=self.model_name,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        res_text = response.choices[0].message.content
-        _log_llm_event("Mistral", self.model_name, prompt, res_text)
-        return res_text
+        retries = 0
+        max_retries = 3
+        base_delay = 5.0
+
+        while True:
+            try:
+                response = await self.client.chat.complete_async(
+                    model=self.model_name,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                res_text = response.choices[0].message.content
+                _log_llm_event("Mistral", self.model_name, prompt, res_text)
+                return res_text
+            except Exception as e:
+                if "429" in str(e):
+                    if retries < max_retries:
+                        delay = base_delay * (2 ** retries)
+                        console.print(f"[bold yellow]Mistral 429 Rate Limit. Retrying in {delay}s... (Attempt {retries + 1}/{max_retries})[/bold yellow]")
+                        await asyncio.sleep(delay)
+                        retries += 1
+                        continue
+                    else:
+                        console.print(f"[bold red]Mistral 429 Rate Limit exceeded max retries ({max_retries}).[/bold red]")
+                        raise e
+                else:
+                    raise e
 
     async def generate_structured(self, prompt: str, schema: Type[T]) -> T:
-        response = await self.client.chat.parse_async(
-            model=self.model_name,
-            messages=[{"role": "user", "content": prompt}],
-            response_format=schema
-        )
-        parsed = response.choices[0].message.parsed
-        _log_llm_event("Mistral", self.model_name, prompt, parsed)
-        return parsed
+        retries = 0
+        max_retries = 3
+        base_delay = 5.0
+
+        while True:
+            try:
+                response = await self.client.chat.parse_async(
+                    model=self.model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    response_format=schema
+                )
+                parsed = response.choices[0].message.parsed
+                _log_llm_event("Mistral", self.model_name, prompt, parsed)
+                return parsed
+            except Exception as e:
+                # Check for rate limit error (usually 429 in string representation)
+                if "429" in str(e):
+                    if retries < max_retries:
+                        delay = base_delay * (2 ** retries)
+                        console.print(f"[bold yellow]Mistral 429 Rate Limit. Retrying in {delay}s... (Attempt {retries + 1}/{max_retries})[/bold yellow]")
+                        await asyncio.sleep(delay)
+                        retries += 1
+                        continue
+                    else:
+                        console.print(f"[bold red]Mistral 429 Rate Limit exceeded max retries ({max_retries}).[/bold red]")
+                        raise e
+                else:
+                    raise e
 
 class OllamaService:
     def __init__(self):
