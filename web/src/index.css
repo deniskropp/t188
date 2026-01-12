@@ -1,6 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-meta-bg: #0a0a0c;
+  --color-meta-card: rgba(23, 23, 27, 0.8);
+  --color-meta-accent: #8b5cf6;
+  --color-meta-accent-glow: rgba(139, 92, 246, 0.4);
+  --background-image-meta-gradient: radial-gradient(circle at top right, #1e1b4b, #000000);
+  --backdrop-blur-xs: 2px;
+}
 
 :root {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;

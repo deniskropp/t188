@@ -21,6 +21,8 @@ interface GraphViewerProps {
   selectedNodeId?: string | null;
 }
 
+const NODE_REL_SIZE = 6;
+
 export const GraphViewer: React.FC<GraphViewerProps> = ({ nodes, edges, onNodeClick, selectedNodeId }) => {
   const gData = useMemo(() => {
     return {
@@ -62,7 +64,7 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({ nodes, edges, onNodeCl
         linkCurvature={0.25}
         linkLabel="label"
         backgroundColor="rgba(0,0,0,0)"
-        nodeRelSize={6}
+        nodeRelSize={NODE_REL_SIZE}
         linkWidth={(link: any) => {
            const isRelatedToSelection = selectedNodeId && (link.source.id === selectedNodeId || link.target.id === selectedNodeId);
            return isRelatedToSelection ? 3 : 1;
@@ -82,7 +84,7 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({ nodes, edges, onNodeCl
 
           if (isSelected) {
             ctx.beginPath();
-            ctx.arc(node.x, node.y, nodeRelSize * 1.5, 0, 2 * Math.PI, false);
+            ctx.arc(node.x, node.y, NODE_REL_SIZE * 1.5, 0, 2 * Math.PI, false);
             ctx.fillStyle = 'rgba(139, 92, 246, 0.3)';
             ctx.fill();
             ctx.strokeStyle = '#8b5cf6';
@@ -91,15 +93,15 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({ nodes, edges, onNodeCl
           }
 
           ctx.fillStyle = 'rgba(10, 10, 12, 0.9)';
-          ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - nodeRelSize - bckgDimensions[1] - 2, bckgDimensions[0], bckgDimensions[1]);
+          ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - NODE_REL_SIZE - bckgDimensions[1] - 2, bckgDimensions[0], bckgDimensions[1]);
 
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillStyle = isSelected ? '#fff' : node.color;
-          ctx.fillText(label, node.x, node.y - nodeRelSize - bckgDimensions[1] / 2 - 2);
+          ctx.fillText(label, node.x, node.y - NODE_REL_SIZE - bckgDimensions[1] / 2 - 2);
 
           ctx.fillStyle = node.color;
-          ctx.beginPath(); ctx.arc(node.x, node.y, isSelected ? nodeRelSize * 1.2 : nodeRelSize, 0, 2 * Math.PI, false); ctx.fill();
+          ctx.beginPath(); ctx.arc(node.x, node.y, isSelected ? NODE_REL_SIZE * 1.2 : NODE_REL_SIZE, 0, 2 * Math.PI, false); ctx.fill();
         }}
       />
     </div>

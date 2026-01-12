@@ -4,8 +4,8 @@ import { GraphViewer } from './components/GraphViewer';
 import { Chat } from './components/Chat';
 import { LoreSidebar } from './components/LoreSidebar';
 import { LoopDashboard } from './components/LoopDashboard';
-import { motion } from 'framer-motion';
-import { BrainCircuit, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BrainCircuit, Info, Layers } from 'lucide-react';
 import { useCognitive } from './hooks/useCognitive';
 import { lex, sage, planner, systemApi } from './lib/api';
 

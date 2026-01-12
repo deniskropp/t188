@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { loopApi } from '../lib/api';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Target, Award, Zap, Heart, BarChart3, Layers, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Activity, Target, Zap, Heart, Layers, Loader2 } from 'lucide-react';
 
 export const LoopDashboard: React.FC = () => {
     const [status, setStatus] = useState<any>(null);
