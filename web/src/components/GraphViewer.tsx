@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 
 interface Node {
@@ -23,87 +23,145 @@ interface GraphViewerProps {
 
 const NODE_REL_SIZE = 6;
 
+const typeColors: Record<string, string> = {
+  'Character': '#fbbf24', // Yellow (Dopamin style)
+  'Location': '#10b981', // Green
+  'Event': '#f87171',    // Red (evt: style)
+  'Concept': '#6366f1',  // Blue-Indigo
+  'LatentPattern': '#8b5cf6', // Purple
+  'DreamNarrative': '#d946ef', // Pink
+  'ImplicitPlan': '#fb923c',   // Orange
+};
+
+const typePrefixes: Record<string, string> = {
+  'Event': 'evt',
+  'LatentPattern': 'pattern',
+  'DreamNarrative': 'dream',
+  'ImplicitPlan': 'plan',
+  'Character': 'char',
+  'Location': 'loc',
+};
+
 export const GraphViewer: React.FC<GraphViewerProps> = ({ nodes, edges, onNodeClick, selectedNodeId }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const ro = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      setDimensions({ width, height });
+    });
+
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
   const gData = useMemo(() => {
     return {
-      nodes: nodes.map(n => {
-        const isSelected = n.id === selectedNodeId;
-        return {
-          ...n,
-          val: isSelected ? 20 : 10,
-          // Color coding by type
-          color: n.type === 'Character' ? '#fbbf24' : 
-                 n.type === 'Location' ? '#10b981' : 
-                 n.type === 'Event' ? '#f87171' : 
-                 n.type.includes('Subconscious') ? '#8b5cf6' : '#6366f1'
-        };
-      }),
+      nodes: nodes.map(n => ({
+        ...n,
+        color: typeColors[n.type] || '#6366f1'
+      })),
       links: edges.map(e => ({
         source: e.source,
         target: e.target,
         label: e.label
       }))
     };
-  }, [nodes, edges, selectedNodeId]);
+  }, [nodes, edges]);
 
   return (
-    <div className="glass rounded-2xl overflow-hidden w-full h-full relative min-h-[400px]">
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-        <h2 className="text-sm font-bold text-white bg-black/40 px-3 py-1 rounded-full backdrop-blur-md border border-white/10 flex items-center gap-2">
-           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-           World Graph Live
-        </h2>
+    <div ref={containerRef} className="w-full h-full relative bg-[#0d0f14]">
+      <div className="absolute top-6 left-6 z-10 pointer-events-none">
+        <div className="flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl">
+           <div className={`w-2 h-2 rounded-full ${nodes.length > 0 ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
+           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300 italic">
+             {nodes.length > 0 ? 'World Graph Live' : 'Awaiting Data'}
+           </span>
+        </div>
       </div>
-      <ForceGraph2D
-        graphData={gData}
-        nodeLabel={(node: any) => `${node.type}: ${node.label}`}
-        nodeAutoColorBy="type"
-        onNodeClick={(node: any) => onNodeClick?.(node.id)}
-        linkDirectionalArrowLength={3.5}
-        linkDirectionalArrowRelPos={1}
-        linkCurvature={0.25}
-        linkLabel="label"
-        backgroundColor="rgba(0,0,0,0)"
-        nodeRelSize={NODE_REL_SIZE}
-        linkWidth={(link: any) => {
-           const isRelatedToSelection = selectedNodeId && (link.source.id === selectedNodeId || link.target.id === selectedNodeId);
-           return isRelatedToSelection ? 3 : 1;
-        }}
-        linkColor={(link: any) => {
-           const isRelatedToSelection = selectedNodeId && (link.source.id === selectedNodeId || link.target.id === selectedNodeId);
-           return isRelatedToSelection ? 'rgba(139, 92, 246, 0.5)' : 'rgba(255,255,255,0.1)';
-        }}
-        nodeCanvasObject={(node: any, ctx, globalScale) => {
-          const label = node.label;
-          const fontSize = 12 / globalScale;
-          const isSelected = node.id === selectedNodeId;
-          
-          ctx.font = `${isSelected ? 'bold ' : ''}${fontSize}px Inter`;
-          const textWidth = ctx.measureText(label).width;
-          const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.4); 
 
-          if (isSelected) {
+      {nodes.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-center p-8 bg-black/20 backdrop-blur-sm rounded-3xl border border-white/5">
+                <div className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">No Active World State</div>
+                <div className="text-zinc-600 text-[10px]">Begin a narrative to generate the graph</div>
+            </div>
+          </div>
+      )}
+      
+      {dimensions.width > 0 && (
+        <ForceGraph2D
+          width={dimensions.width}
+          height={dimensions.height}
+          graphData={gData}
+          nodeLabel={(node: any) => `${node.type}: ${node.label}`}
+          onNodeClick={(node: any) => onNodeClick?.(node.id)}
+          linkDirectionalArrowLength={4}
+          linkDirectionalArrowRelPos={1}
+          linkCurvature={0.2}
+          backgroundColor="rgba(0,0,0,0)"
+          nodeRelSize={NODE_REL_SIZE}
+          linkWidth={1.5}
+          linkColor={() => 'rgba(255,255,255,0.05)'}
+          nodeCanvasObject={(node: any, ctx, globalScale) => {
+            const isSelected = node.id === selectedNodeId;
+            const prefix = typePrefixes[node.type];
+            const label = prefix ? `${prefix}_${node.label.toLowerCase().replace(/\s+/g, '_')}` : node.label;
+            const fontSize = 10 / globalScale;
+            const color = node.color;
+
+            // Shadow/Glow
+            if (isSelected) {
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, NODE_REL_SIZE * 2, 0, 2 * Math.PI, false);
+              const gradient = ctx.createRadialGradient(node.x, node.y, NODE_REL_SIZE, node.x, node.y, NODE_REL_SIZE * 2.5);
+              gradient.addColorStop(0, `${color}44`);
+              gradient.addColorStop(1, 'rgba(0,0,0,0)');
+              ctx.fillStyle = gradient;
+              ctx.fill();
+            }
+
+            // Node core
             ctx.beginPath();
-            ctx.arc(node.x, node.y, NODE_REL_SIZE * 1.5, 0, 2 * Math.PI, false);
-            ctx.fillStyle = 'rgba(139, 92, 246, 0.3)';
+            ctx.arc(node.x, node.y, isSelected ? NODE_REL_SIZE * 1.5 : NODE_REL_SIZE, 0, 2 * Math.PI, false);
+            ctx.fillStyle = isSelected ? '#fff' : color;
             ctx.fill();
-            ctx.strokeStyle = '#8b5cf6';
-            ctx.lineWidth = 2 / globalScale;
+
+            // Outer ring for selected
+            if (isSelected) {
+              ctx.strokeStyle = '#fff';
+              ctx.lineWidth = 2 / globalScale;
+              ctx.stroke();
+            }
+
+            // Label Box
+            ctx.font = `${fontSize}px Inter`;
+            const textWidth = ctx.measureText(label).width;
+            const padding = 4 / globalScale;
+            const boxWidth = textWidth + padding * 2;
+            const boxHeight = fontSize + padding;
+
+            ctx.fillStyle = 'rgba(10, 10, 12, 0.8)';
+            ctx.beginPath();
+            // ctx.roundRect(node.x - boxWidth / 2, node.y + NODE_REL_SIZE + padding, boxWidth, boxHeight, 4 / globalScale);
+            // Standard rect for compatibility if roundRect is picky or not available in all envs
+            ctx.rect(node.x - boxWidth / 2, node.y + NODE_REL_SIZE + padding, boxWidth, boxHeight);
+            ctx.fill();
+            ctx.strokeStyle = isSelected ? color : `${color}44`;
+            ctx.lineWidth = 1 / globalScale;
             ctx.stroke();
-          }
 
-          ctx.fillStyle = 'rgba(10, 10, 12, 0.9)';
-          ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - NODE_REL_SIZE - bckgDimensions[1] - 2, bckgDimensions[0], bckgDimensions[1]);
-
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = isSelected ? '#fff' : node.color;
-          ctx.fillText(label, node.x, node.y - NODE_REL_SIZE - bckgDimensions[1] / 2 - 2);
-
-          ctx.fillStyle = node.color;
-          ctx.beginPath(); ctx.arc(node.x, node.y, isSelected ? NODE_REL_SIZE * 1.2 : NODE_REL_SIZE, 0, 2 * Math.PI, false); ctx.fill();
-        }}
-      />
+            // Label Text
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = isSelected ? '#fff' : color;
+            ctx.fillText(label, node.x, node.y + NODE_REL_SIZE + padding + boxHeight / 2);
+          }}
+        />
+      )}
     </div>
   );
 };

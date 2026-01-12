@@ -129,7 +129,7 @@ function App() {
   return (
     <div className="flex h-screen w-full bg-[#0a0c10] text-white overflow-hidden font-sans selection:bg-meta-accent/30">
       {/* 1. Left Navigation Sidebar */}
-      <aside className="w-[320px] shrink-0 border-r border-white/5 bg-[#0f1117] flex flex-col p-6 gap-6 relative z-30">
+      <aside className="w-[320px] shrink-0 border-r border-white/5 bg-[#0f1117] flex flex-col p-4 gap-6 relative z-30">
         <header className="flex items-center gap-3 mb-4">
            <div className="p-2.5 bg-meta-accent/10 rounded-2xl border border-meta-accent/20 shadow-lg shadow-meta-accent/5">
               <BrainCircuit className="text-meta-accent w-6 h-6" />
@@ -160,32 +160,32 @@ function App() {
            <LoopDashboard />
         </div>
 
-        {/* System Summary (Matches Screenshot) */}
-        <div className="bg-[#161922] p-5 rounded-3xl border border-white/5 mt-auto">
-            <div className="flex items-center justify-between mb-4">
-               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic">System Status</span>
-               <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 rounded-full border border-green-500/20">
+        {/* System Summary */}
+        <div className="bg-[#161922] p-6 rounded-[2rem] border border-white/5 mt-auto">
+            <div className="flex items-center justify-between mb-5">
+               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 italic">System Status</span>
+               <div className="flex items-center gap-2 px-3 py-1 bg-green-500/5 rounded-full border border-green-500/20">
                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-[9px] font-bold text-green-500 uppercase tracking-tighter">Online</span>
+                  <span className="text-[8px] font-black text-green-500 uppercase tracking-widest">Online</span>
                </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3 mb-4">
-               <div className="bg-white/5 p-3 rounded-2xl border border-white/5">
-                  <div className="text-[9px] font-bold text-zinc-600 uppercase mb-1">Entities</div>
-                  <div className="text-xl font-black italic">{nodes.length}</div>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+               <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/5">
+                  <div className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Entities</div>
+                  <div className="text-2xl font-black italic tracking-tighter">{nodes.length}</div>
                </div>
-               <div className="bg-white/5 p-3 rounded-2xl border border-white/5">
-                  <div className="text-[9px] font-bold text-zinc-600 uppercase mb-1">Relations</div>
-                  <div className="text-xl font-black italic">{edges.length}</div>
+               <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/5">
+                  <div className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Relations</div>
+                  <div className="text-2xl font-black italic tracking-tighter">{edges.length}</div>
                </div>
             </div>
 
             <button 
               onClick={handleClear}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-red-500/20 text-red-500/60 hover:text-red-400 hover:bg-red-500/5 transition-all text-[10px] font-bold uppercase tracking-widest"
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-[1.5rem] border border-red-500/10 text-red-500/40 hover:text-red-400 hover:bg-red-500/5 transition-all text-[9px] font-black uppercase tracking-[0.2em]"
             >
-               <Info size={14} />
+               <Info size={14} className="opacity-50" />
                Clear World State
             </button>
         </div>
@@ -229,35 +229,42 @@ function App() {
         </AnimatePresence>
 
         {/* Central Bottom Chat Overlay (Matches Screenshot) */}
-        <div className="absolute bottom-6 left-6 right-6 z-20 max-w-5xl mx-auto flex flex-col gap-4">
-           {/* Context-aware suggestion chips */}
-           {suggestions.length > 0 && (
-             <motion.div 
-               initial={{ y: 20, opacity: 0 }}
-               animate={{ y: 0, opacity: 1 }}
-               className="flex justify-center gap-2"
-             >
-                {suggestions.map((s, i) => (
-                  <button key={i} className="px-3 py-1.5 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-bold text-meta-accent hover:border-meta-accent/50 transition-all shadow-xl uppercase tracking-tighter">
-                    {s}
-                  </button>
-                ))}
-             </motion.div>
-           )}
+        <div className="absolute bottom-6 left-6 right-6 z-20 pointer-events-none flex flex-col justify-end">
+           <div className="max-w-5xl mx-auto w-full flex flex-col gap-4 max-h-[85vh]">
+              {/* Context-aware suggestion chips */}
+              {suggestions.length > 0 && (
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="flex justify-center gap-2 mb-2 pointer-events-auto"
+                >
+                   {suggestions.map((s, i) => (
+                     <button 
+                       key={i} 
+                       onClick={() => handleSendMessage(s)}
+                       className="px-4 py-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full text-[10px] font-black text-meta-accent hover:border-meta-accent/50 hover:bg-meta-accent/10 transition-all shadow-2xl uppercase tracking-tighter"
+                     >
+                       {s}
+                     </button>
+                   ))}
+                </motion.div>
+              )}
 
-           <Chat 
-             onSendMessage={handleSendMessage}
-             onClear={handleClear}
-             onSuggest={handleSuggest}
-             onPlan={handlePlan}
-             messages={messages.filter(m => m.role !== 'system')}
-             isProcessing={isProcessing}
-             suggestions={suggestions}
-           />
-           
-           <div className="flex justify-center">
-              <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-[0.3em] bg-black/40 px-4 py-1.5 rounded-full border border-white/5 backdrop-blur-md">
-                 Orchestration Engine Ready
+              <div className="pointer-events-auto min-h-0 flex flex-col">
+                <Chat 
+                  onSendMessage={handleSendMessage}
+                  onClear={handleClear}
+                  onSuggest={handleSuggest}
+                  onPlan={handlePlan}
+                  messages={messages.filter(m => m.role !== 'system')}
+                  isProcessing={isProcessing}
+                />
+              </div>
+              
+              <div className="flex justify-center pointer-events-auto">
+                 <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-[0.3em] bg-black/40 px-4 py-1.5 rounded-full border border-white/5 backdrop-blur-md">
+                    Orchestration Engine Ready
+                 </div>
               </div>
            </div>
         </div>

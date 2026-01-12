@@ -1,5 +1,6 @@
 __pycache__
 knowledge_graph.json
+knowledge_graph_history.json
 node_modules
 dist
 files

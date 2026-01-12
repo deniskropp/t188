@@ -58,14 +58,14 @@ class QuestOrchestrator:
                 return badge
         return None
 
-    def get_loop_status(self, dopamine: float, flow: float, engagement: float = 0.0) -> LoopStatus:
+    def get_loop_status(self, dopamine: float, flow: float, oxytocin: float = 0.5, engagement: float = 0.0) -> LoopStatus:
         return LoopStatus(
             dopamine_density=dopamine,
             flow_time=flow,
-            oxytocin_level=0.5,
+            oxytocin_level=oxytocin,
             engagement_index=engagement,
             active_quests=list(self.quests.values()),
             earned_badges=[self.badges[bid] for bid in self.earned_badge_ids],
             last_action_at=time.time(),
-            current_pipes=self.recent_pipes or ["Idle: Waiting for input..."]
+            current_pipes=self.recent_pipes or ["Idle: Waiting for neural activity..."]
         )

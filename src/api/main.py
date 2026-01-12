@@ -153,15 +153,30 @@ async def get_suggestions() -> Dict[str, List[str]]:
 async def chat(input: ChatInput) -> Dict[str, Any]:
     """Process a story request and return the narrative segment."""
     print(f"Received chat request: {input.message}")
+    # Log the interaction for Dopamin/Bond metrics
+    await journal_service.log_entry(
+        action_type="interaction",
+        content=input.message,
+        sentiment=0.5 # Neutral base
+    )
     try:
         # We pass the mind_state directly if the frontend has one staged
         result: SynthesisOutput = await system.process_story_request(input.message, callback=system_callback, mind_state=input.mind_state)
+        await journal_service.log_entry(
+            action_type="stroke",
+            content=result.narrative_segment[:100],
+            sentiment=0.8 # Success boost
+        )
         print(f"Successfully processed: {result.narrative_segment[:50]}...")
         return {
             "reply": result.narrative_segment,
             "graph_nodes": len(system.graph_store.graph.nodes)
         }
     except Exception as e:
+        await journal_service.log_entry(
+            action_type="error",
+            content=str(e)
+        )
         print(f"Error processing chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -169,6 +184,10 @@ async def chat(input: ChatInput) -> Dict[str, Any]:
 async def plan(input: ChatInput) -> MindState:
     """Run only the subconscious planning phase."""
     print(f"Received plan request: {input.message}")
+    await journal_service.log_entry(
+        action_type="reflection",
+        content=input.message
+    )
     try:
         mind_state = await system.plan(input.message, callback=system_callback)
         return mind_state
@@ -225,8 +244,9 @@ async def get_loop_status() -> LoopStatus:
     """Get the current neurocognitive status and quest progress."""
     dopamine = journal_service.calculate_dopamine_density()
     flow = journal_service.calculate_flow_time()
+    bond = journal_service.calculate_bond_level()
     engagement = journal_service.calculate_engagement_index()
-    return quest_orchestrator.get_loop_status(dopamine, flow, engagement)
+    return quest_orchestrator.get_loop_status(dopamine, flow, bond, engagement)
 
 @app.post("/api/loop/entry")
 async def create_journal_entry(entry_data: Dict[str, Any]) -> JournalEntry:
